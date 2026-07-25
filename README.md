@@ -26,7 +26,7 @@ So UI gets its own repo, mounted **only where it is used**. Precedent:
 
 | File | Exports |
 |------|---------|
-| `LeftNav.tsx` | `LeftNav`, and the types `NavItem`, `NavLinkItem`, `NavGroupItem`, `LeftNavProps` — the left-hand sidebar shell: app header, link/group nav with accordions, off-canvas mobile drawer, and a pinned bottom block (Changelog · Help · signed-in email · Sign out). Client component (`"use client"`). |
+| `LeftNav.tsx` | `LeftNav`, and the types `NavItem`, `NavLinkItem`, `NavChildItem`, `NavGroupItem`, `LeftNavProps` — the left-hand sidebar shell: app header, link/group nav with accordions, off-canvas mobile drawer, and a pinned bottom block (Changelog · Help · signed-in email · Sign out). Client component (`"use client"`). |
 
 There is no barrel `index.ts` — import the file directly (`@/app-ui/LeftNav`), matching
 how web-core is consumed.
@@ -37,7 +37,7 @@ how web-core is consumed.
 |------|------|---------|-------|
 | `appName` | `string` | — | Sidebar header + mobile top bar. |
 | `appInitial` | `string` | first char of `appName` | Letter in the logo square. |
-| `navItems` | `NavItem[]` | — | Mix `{ kind: "link" }` and `{ kind: "group" }` entries. |
+| `navItems` | `NavItem[]` | — | Mix `{ kind: "link" }` and `{ kind: "group" }` entries. Each link (and each group child) takes an optional `exact` — see below. |
 | `userEmail` | `string` | — | Shown above Sign out. |
 | `onSignOut` | `() => void` | — | Pass a server action. Omit and the row is not rendered. |
 | `changelogHref` | `string \| null` | `"/changelog"` | `null` hides the row. |
@@ -65,6 +65,12 @@ real consumers without any of them having to fork:
   variant is not solved yet and should not be faked with a prop that half-works.
 - **`footer`** — a slot for an environment badge / tenant switcher / version string,
   rather than growing a prop per app.
+- **`exact` on a nav entry** — the active check matches whole path *segments*, so a row is
+  active on its descendants too (`/admin/orders` keeps the Orders row lit on
+  `/admin/orders/abc`). That breaks down for a row that is an ancestor of the whole rest
+  of the nav: `checkout-engine`'s Dashboard points at `/admin`, and without `exact: true`
+  it would render active on `/admin/orders`, `/admin/settings` and every other page. `/`
+  is always treated as exact for the same reason.
 - **`changelogHref: null` / `helpHref: null`** — `checkout-engine`'s and
   `ownerfoundry-website`'s admin areas have no `/changelog` or `/help` page, and a pinned
   nav row that 404s is worse than no row.

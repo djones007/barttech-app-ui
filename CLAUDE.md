@@ -70,25 +70,35 @@ used**. Precedent: `barton-lms-engine`.
 
 | File | Exports |
 |------|---------|
-| `LeftNav.tsx` | `LeftNav` + types `NavItem`, `NavLinkItem`, `NavGroupItem`, `LeftNavProps`. Client component. Full prop table in `README.md`. |
+| `LeftNav.tsx` | `LeftNav` + types `NavItem`, `NavLinkItem`, `NavChildItem`, `NavGroupItem`, `LeftNavProps`. Client component. Full prop table in `README.md`. |
 
 No barrel `index.ts` — import the file directly (`@/app-ui/LeftNav`), matching web-core.
 
 ## Consumers
 
-**None yet.** Phase 1 created and published this repo only; mounting it in consumers is a
-separate later pass. Keep this table current as they are added — it is what a propagate
-script would drive off.
+Keep this table current as consumers are added — it is what a propagate script would drive
+off.
 
-| App | Mount path | Branch | Uses | Notes |
-|-----|-----------|--------|------|-------|
-| _(none)_ | | | | |
+| App | Mount path | Branch | Consumed as | Notes |
+|-----|-----------|--------|-------------|-------|
+| `barttech-next-template` | `src/app-ui` | `main` | `src/components/LeftNav.tsx` shim | No Vercel project — nothing to deploy-verify. |
+| `checkout-engine` | `src/app-ui` | `main` | `src/components/AdminShell.tsx` (client) | `homeHref="/admin"`, Dashboard row uses `exact`, `changelogHref`/`helpHref` `null`. Nav suppressed on `/admin/login`. |
+| `ownerfoundry-website` | `src/app-ui` | `main` | `src/components/AdminShell.tsx` (client) | `homeHref="/admin/dashboard"`, `changelogHref`/`helpHref` `null`. Nav suppressed on `/admin/login`. Also mounts the private LMS submodule — see the stale-cache note below. |
 
-Intended first consumers and what each needs:
+**Both greenfield mounts hide the nav on their login page**, via a client wrapper that
+checks `usePathname()`. A `layout.tsx` is a server component and cannot read the pathname,
+and route groups would have meant moving every admin directory. A sign-in screen must not
+advertise the app's route map, and the nav's sign-out row is meaningless on it.
 
-- **`barttech-next-template`** — `src/components/LeftNav.tsx` becomes a shim
-  (`export * from "@/app-ui/LeftNav"`). No prop changes; the shared component's public
-  API was kept identical for exactly this reason.
+**OF/BMB stale-cache gotcha (applies to `ownerfoundry-website`):** it uses
+`scripts/fetch-submodules.sh` for the private LMS submodule, and Vercel can restore a build
+cache predating a pointer bump, leaving a submodule worktree EMPTY — CI green, Vercel
+failing. The script carries an empty-worktree guard that purges `.git/modules/<sub>` and
+re-inits with `--force`; **any new submodule must be added to that guard's list**, or the
+first stale-cache build after a bump breaks with no local symptom.
+
+Remaining intended consumers:
+
 - **`command-center`** — `src/components/nav.tsx` hardcodes its `NAV_ITEMS`, "Command
   Centre", the `B` initial and its own `signOut`; those become props. Its default branch
   is **`master`**, not `main`, and its bottom block today has no Changelog/Help rows (it
@@ -97,10 +107,17 @@ Intended first consumers and what each needs:
   and CSS custom properties, `w-56`/220px, rooted at `/admin/dashboard`. Needs
   `homeHref`, `widthClassName`, `style`; a full CSS-variable theme for the *rows* is not
   solved and would need real design work, not another prop.
-- **`checkout-engine`** (admin forces a light colour scheme, no nav today) and
-  **`ownerfoundry-website`** (admin has no nav today) — greenfield mounts; both need
-  `homeHref` plus `changelogHref={null}` / `helpHref={null}`.
 - **`cloud-plus-v2`** — admin is tab-based. **Out of scope**, deliberately.
+
+## Tailwind: the consumer must scan this directory
+
+`LeftNav` is styled with Tailwind utility classes, so **every consumer's Tailwind build has
+to see this submodule's source or the sidebar renders unstyled** — no width, no background,
+no `fixed` positioning, and the "hidden" off-canvas drawer sits on top of the page. Tailwind
+v4's automatic source detection does walk a submodule directory, but it is detection, not a
+contract: add an explicit `@source "../app-ui";` (path relative to the CSS file) next to the
+`@import "tailwindcss"` in the consumer's `globals.css`. It costs nothing and it is the one
+failure here that a green `tsc`, a green lint and a green build all miss.
 
 ## Adding a new consumer
 
@@ -108,7 +125,9 @@ Intended first consumers and what each needs:
 2. Convert the app's existing nav component into a shim (`export * from "@/app-ui/LeftNav"`) so call sites do not change, or import `@/app-ui/LeftNav` directly.
 3. **Exclude the vendored path from the app's own lint** (`src/app-ui/**` or `app-ui/**` — mount path differs per repo, read `.gitmodules`, do not assume). This repo gates itself; a second gate in a consumer only produces failures against files that repo may not edit.
 4. Add `submodules: recursive` to the app's `actions/checkout` step in `.github/workflows/ci.yml`. Public submodule → no token. Vercel clones it natively.
-5. Add the app to the consumer table above.
+5. Add `@source "../app-ui";` to the app's `globals.css` (see the Tailwind section above) — the one failure mode a green build does not catch.
+6. If the app has a login page inside the same layout, suppress the nav on it with a client `usePathname()` wrapper.
+7. Add the app to the consumer table above.
 
 ## Its own CI
 

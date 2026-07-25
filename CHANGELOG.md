@@ -2,6 +2,22 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-07-25b] — `exact` on nav entries; first three consumers mounted
+
+### Added
+- **`exact?: boolean` on `NavLinkItem` and on group children**, plus the exported type `NavChildItem` (previously an inline anonymous type). The active check matches whole path *segments*, so a row stays lit on its descendants — right for `/admin/orders` → `/admin/orders/abc`, wrong for a row that is an ancestor of the entire rest of the nav. `checkout-engine`'s Dashboard points at `/admin`, so without this it would render active on `/admin/orders`, `/admin/settings` and every other admin page at once. `/` was already special-cased for exactly this reason; `exact` generalises it. Purely additive — omitted, behaviour is identical to before.
+
+### Changed
+- `NavLinkRow` is now given its props explicitly rather than by spreading the nav item, so a new field on the item type cannot silently leak through as an unknown DOM-bound prop.
+
+### Consumers
+First three mounts, all at `src/app-ui` (each repo's `@/*` maps to `./src/*`):
+- **`barttech-next-template`** — `src/components/LeftNav.tsx` became a shim; no call site changed.
+- **`checkout-engine`** — `/admin` had no nav at all. Added via a client `AdminShell` wrapper inside the existing `admin/layout.tsx`, which keeps that layout's forced `colorScheme: light` (the admin must not follow the visitor's OS dark mode).
+- **`ownerfoundry-website`** — `/admin` had no nav at all. Same pattern, keeping the layout's fonts and `noindex` metadata.
+
+Both new consumers pass `changelogHref={null}` / `helpHref={null}` (no such pages) and hide the nav on their login page — a sign-in screen must not advertise the app's route map, and the nav's sign-out row is meaningless there.
+
 ## [2026-07-25] — repo created: shared app-shell UI
 
 ### Added

@@ -11,13 +11,29 @@ export type NavLinkItem = {
   href: string;
   label: string;
   icon?: React.ElementType;
+  /**
+   * Match this href EXACTLY — do not treat descendant routes as active.
+   * Needed by any app whose index page is itself a nav row: an app rooted at
+   * `/admin` with a Dashboard row pointing at `/admin` would otherwise show
+   * Dashboard active on `/admin/orders`, `/admin/settings` and every other
+   * page, because those are all descendants of it.
+   */
+  exact?: boolean;
+};
+
+export type NavChildItem = {
+  href: string;
+  label: string;
+  icon?: React.ElementType;
+  /** See `NavLinkItem.exact`. */
+  exact?: boolean;
 };
 
 export type NavGroupItem = {
   kind: "group";
   label: string;
   icon?: React.ElementType;
-  children: Array<{ href: string; label: string; icon?: React.ElementType }>;
+  children: NavChildItem[];
 };
 
 export type NavItem = NavLinkItem | NavGroupItem;
@@ -83,9 +99,13 @@ function cls(...args: (string | false | null | undefined)[]): string {
  * Segment-aware active check. A plain `startsWith` marks `/cloud-plus/cost-rules`
  * active while you are on `/cloud-plus-quotes`, because one string is a prefix of
  * the other — match whole path segments instead.
+ *
+ * `exact` turns off descendant matching for a row that is itself an ancestor of
+ * the rest of the nav (a Dashboard at `/admin` alongside `/admin/orders`). `/`
+ * is always exact for the same reason — every path is a descendant of it.
  */
-function isActive(pathname: string, href: string): boolean {
-  if (href === "/") return pathname === "/";
+function isActive(pathname: string, href: string, exact?: boolean): boolean {
+  if (exact || href === "/") return pathname === href;
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
@@ -190,7 +210,7 @@ function NavGroupRow({
   onToggle: () => void;
   onNavigate: () => void;
 }) {
-  const hasActiveChild = item.children.some((c) => isActive(pathname, c.href));
+  const hasActiveChild = item.children.some((c) => isActive(pathname, c.href, c.exact));
   const Icon = item.icon;
 
   return (
@@ -219,9 +239,11 @@ function NavGroupRow({
           {item.children.map((child) => (
             <NavLinkRow
               key={child.href}
-              {...child}
+              href={child.href}
+              label={child.label}
+              icon={child.icon}
               nested
-              active={isActive(pathname, child.href)}
+              active={isActive(pathname, child.href, child.exact)}
               onNavigate={onNavigate}
             />
           ))}
@@ -279,7 +301,7 @@ export function LeftNav({
   const [overrides, setOverrides] = useState<Record<string, boolean>>({});
 
   const openFor = (g: NavGroupItem, ov: Record<string, boolean>) =>
-    ov[g.label] ?? g.children.some((c) => isActive(pathname, c.href));
+    ov[g.label] ?? g.children.some((c) => isActive(pathname, c.href, c.exact));
 
   const groupOpen = (g: NavGroupItem) => openFor(g, overrides);
 
@@ -362,8 +384,10 @@ export function LeftNav({
             item.kind === "link" ? (
               <NavLinkRow
                 key={item.href}
-                {...item}
-                active={isActive(pathname, item.href)}
+                href={item.href}
+                label={item.label}
+                icon={item.icon}
+                active={isActive(pathname, item.href, item.exact)}
                 onNavigate={closeMobile}
               />
             ) : (
