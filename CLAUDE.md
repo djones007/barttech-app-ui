@@ -97,8 +97,11 @@ advertise the app's route map, and the nav's sign-out row is meaningless on it.
 `scripts/fetch-submodules.sh` for the private LMS submodule, and Vercel can restore a build
 cache predating a pointer bump, leaving a submodule worktree EMPTY — CI green, Vercel
 failing. The script carries an empty-worktree guard that purges `.git/modules/<sub>` and
-re-inits with `--force`; **any new submodule must be added to that guard's list**, or the
-first stale-cache build after a bump breaks with no local symptom.
+re-inits with `--force`. **That guard enumerates `.gitmodules` at run time**
+(`git config --file .gitmodules --get-regexp path`), so `src/app-ui` was covered the moment
+it was added — verified in the script, not assumed. Nothing to edit when mounting here; do
+re-check it if that loop is ever replaced with a hardcoded list, because the failure has no
+local symptom (CI green, Vercel red, only on a cache-restored build after a pointer bump).
 
 **`style` was NOT used by `barton-lms`, and the reason matters.** That app is dark-themed
 (`body { color: #e2e2f0 }` on `--bg: #0f0f1a`), and `style` themes the `<aside>` **only**,
