@@ -1,0 +1,29 @@
+{
+  // Type-checking only — this repo has no build step. Consumers mount it as a git
+  // submodule and transpile the .tsx source through their own Next build, so nothing
+  // here is ever emitted. `noEmit` keeps that contract explicit.
+  //
+  // React/Next are devDependencies HERE purely so this file can resolve `next/link`,
+  // `react` and the JSX runtime while checking itself. They are peerDependencies for
+  // consumers — nothing in this repo's node_modules ever reaches them (it is
+  // gitignored, so the submodule checkout is source-only).
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": false,
+    "noEmit": true
+  },
+  "include": ["*.ts", "*.tsx"],
+  "exclude": ["node_modules"]
+}

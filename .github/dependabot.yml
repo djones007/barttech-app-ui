@@ -1,0 +1,52 @@
+version: 2
+updates:
+  # This repo ships no runtime dependencies — react/react-dom/next are peerDeps
+  # (satisfied by the consuming app) and everything below is the dev-only toolchain
+  # that lets app-ui lint and type-check ITSELF in CI. Consumers never install any of
+  # it. Without Dependabot that toolchain would silently rot, which matters more here
+  # than in a normal app: this is a shared module, so a stale checker here is a blind
+  # spot in every consuming app at once.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      all-dependencies:
+        patterns:
+          - "*"
+    ignore:
+      # Estate-standard major holds ([[feedback_dependabot_upstream_holds]]):
+      # typescript-eslint hard-refuses TS 7 ("typescript-eslint does not support
+      # TS 7.0"), so the TypeScript and ESLint majors move deliberately, not on a
+      # monthly auto-bump. Minor and patch still flow.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@eslint/*"
+        update-types: ["version-update:semver-major"]
+      # Extra holds specific to this repo: react/react-dom/next and their @types are
+      # here only to type-check against what CONSUMERS run. Auto-bumping a major
+      # would have this repo lead the estate rather than track it — a green CI here
+      # against React 20 types proves nothing about the 19.x apps that mount it, and
+      # a red one is a false failure. Bump these when a consumer actually moves.
+      - dependency-name: "next"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@types/react-dom"
+        update-types: ["version-update:semver-major"]
+    open-pull-requests-limit: 5
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 5
