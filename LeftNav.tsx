@@ -327,7 +327,7 @@ export function LeftNav({
   return (
     <>
       {/* Mobile top bar (hidden on md+) */}
-      <div className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b bg-white/90 px-4 backdrop-blur-sm md:hidden">
+      <div className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-slate-200 bg-white/90 px-4 backdrop-blur-sm md:hidden">
         <button
           type="button"
           onClick={() => setMobileOpen(true)}
@@ -354,14 +354,19 @@ export function LeftNav({
         aria-label={`${appName} navigation`}
         style={style}
         className={cls(
-          "fixed inset-y-0 left-0 z-50 flex flex-col border-r bg-white transition-transform md:translate-x-0",
+          // Every `border-*` here names its colour explicitly. Tailwind v4's
+          // default border colour is `currentColor`, not v3's `gray-200`, so an
+          // unqualified `border-r` renders black in one consumer and invisible
+          // in another purely from that app's inherited text colour. Only repos
+          // carrying the v3 compat shim looked right by accident.
+          "fixed inset-y-0 left-0 z-50 flex flex-col border-r border-slate-200 bg-white transition-transform md:translate-x-0",
           widthClassName,
           mobileOpen ? "translate-x-0" : "-translate-x-full",
           className,
         )}
       >
         {/* App header */}
-        <div className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
+        <div className="flex h-14 shrink-0 items-center gap-2 border-b border-slate-200 px-4">
           <Link href={homeHref} onClick={closeMobile} className="flex min-w-0 items-center gap-2">
             <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-slate-900 text-xs font-bold text-white">
               {initial}
@@ -404,7 +409,7 @@ export function LeftNav({
         </nav>
 
         {/* Bottom: [footer] · Changelog · Help · Account */}
-        <div className="shrink-0 border-t p-3">
+        <div className="shrink-0 border-t border-slate-200 p-3">
           {footer && <div className="pb-2">{footer}</div>}
 
           {(changelogHref || helpHref) && (

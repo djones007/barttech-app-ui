@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-07-25c] — Name every border colour explicitly
+
+### Fixed
+- **`border-r`, `border-b` (×2) and `border-t` on the shell now name `border-slate-200`.** Tailwind v4's default border colour is `currentColor`, not v3's `gray-200`, so an unqualified `border-*` took its colour from whatever text colour the *consumer's* `body` happened to set. The sidebar therefore rendered differently in every app: near-black 1px borders in `bartmail` (`body { color: #171717 }`), effectively invisible ones in `barton-lms` (`body { color: #e2e2f0 }`), and correct gray-200 only in `command-center` — which looked right purely by accident, because it carries the Tailwind v3 border-colour compat shim in its `globals.css` and the other two do not.
+
+  Found while mounting the second and third consumers. Nothing catches it: `tsc`, lint and the production build are all green either way, and the class names are unchanged — only the resolved colour differs. Same category as the `@source` requirement, and the reason a shared UI component must never rely on a framework *default* that a consumer can silently redefine.
+
+  Visible change for `command-center` is gray-200 (`#e5e7eb`) → slate-200 (`#e2e8f0`) — imperceptible, and it matches the `border-slate-200` this component already used on group children.
+
 ## [2026-07-25b] — `exact` on nav entries; first three consumers mounted
 
 ### Added
