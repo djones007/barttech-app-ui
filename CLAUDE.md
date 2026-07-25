@@ -60,8 +60,9 @@ used**. Precedent: `barton-lms-engine`.
    slightly different (different width, `/admin/*` root, inline CSS-variable theming, no
    changelog page). Each of those is one optional additive prop, documented in
    `README.md`. But do not invent props for hypothetical needs, and do not paper over a
-   genuinely different shell: `cloud-plus-v2`'s admin is **tab-based**, which is a
-   different component, not a `variant` flag on this one.
+   genuinely different shell with a `variant` flag: `cloud-plus-v2`'s admin was
+   **tab-based**, and the fix was to give it real routes, not to teach this component
+   to render tabs. See the note under the consumer table.
 6. **Fix once → propagate.** After committing and pushing here, bump each consumer's
    submodule pointer and push (Vercel auto-deploys). Never `vercel --prod` a consumer to
    pick up a bump — a CLI deploy ships a source snapshot with no `.git`.
@@ -87,6 +88,7 @@ off.
 | `command-center` | `src/app-ui` | **`master`** | `src/components/nav.tsx` (config wrapper, exports `Nav`) | Replaced the component this one was built from. `changelogHref`/`helpHref` `null` — no `/changelog`, and Help is already a top-level `NAV_ITEMS` entry. lucide icons on every row. |
 | `bartmail` | `src/app-ui` | `main` | `src/app/(dashboard)/DashboardShell.tsx` | `helpHref="/help"`, `changelogHref={null}`. No icons, no `userEmail`/`onSignOut` (sign-out lives on its `/account` page, which is the last nav entry). Its sidebar was dark `#1e293b` and is now the standard light shell. |
 | `barton-lms` | `src/app-ui` | `main` | `src/components/AdminShell.tsx` | `homeHref="/admin/dashboard"`, `widthClassName="w-56"`, `helpHref="/admin/help"`, `changelogHref={null}`. **`style` deliberately NOT passed** — see below. Its first-ever submodule, so `.gitmodules` and `submodules: recursive` were both new. |
+| `cloud-plus-v2` | `src/app-ui` | `main` | `src/components/admin/AdminShell.tsx` (client) | `homeHref="/admin"`, Leads row uses `exact`, `changelogHref`/`helpHref` `null`. Nav suppressed on `/admin/login`. **Was tab-based** — its eight tabs became eight `/admin/*` routes first (see below). |
 
 **Both greenfield mounts hide the nav on their login page**, via a client wrapper that
 checks `usePathname()`. A `layout.tsx` is a server component and cannot read the pathname,
@@ -112,9 +114,16 @@ component genuinely cannot express**, and the honest answer is a themed variant 
 properly, not a third half-working prop. Until then, do not offer `style` as the answer to
 a dark-themed consumer.
 
-Remaining intended consumers:
-
-- **`cloud-plus-v2`** — admin is tab-based. **Out of scope**, deliberately.
+**`cloud-plus-v2` was the tab-based one, and the resolution is the precedent worth
+keeping.** Its admin was a single page switching eight components on client state.
+Adding a `variant` flag here to render tabs would have been wrong — that really is a
+different component. Adding nothing and leaving one app on a different shell was also
+wrong. What actually happened: the consumer changed its navigation model — each tab
+became its own `/admin/*` route — and then mounted this component with no new prop and
+no fork. **When a consumer's shape does not fit, check whether the consumer's shape is
+the thing to change before you reach for a flag.** The conversion needed care rather
+than cleverness: every new route had to stay inside that app's existing `/admin*`
+session-gate matcher, and its data had to keep coming from admin-gated API routes.
 
 ## Tailwind: the consumer must scan this directory
 

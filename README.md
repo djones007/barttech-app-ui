@@ -79,8 +79,10 @@ real consumers without any of them having to fork:
   `ownerfoundry-website`'s admin areas have no `/changelog` or `/help` page, and a pinned
   nav row that 404s is worse than no row.
 
-`cloud-plus-v2`'s admin is **tab-based**, not a sidebar. Deliberately not addressed —
-that is a different shell, not a variant of this one.
+`cloud-plus-v2`'s admin **was** tab-based, and it is now a consumer like the rest: its
+eight tabs became eight `/admin/*` routes, then it mounted this component unchanged.
+No `variant` prop was added, and none should be — rendering tabs is a different shell,
+not a mode of this one.
 
 ### Icons
 

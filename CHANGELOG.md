@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-07-25e] — Consumer table: `cloud-plus-v2` (the tab-based one)
+
+### Changed
+- Docs only. **`cloud-plus-v2` is now the seventh consumer**, so the "deliberately out of scope — tab-based admin" carve-out is gone. It was correct that a tab switcher is not a `variant` of this component; what it was not is a reason to leave one app on a different shell. That repo converted its eight tabs into eight `/admin/*` routes and mounted this component unchanged — no new prop, no fork. Its `homeHref` is `/admin` and the row pointing there carries `exact`, exactly like `checkout-engine`.
+- The lesson worth keeping: **the answer to a consumer with a different navigation model is to change the consumer's model, not to add a flag here.** Every one of the seven now shares the same shell, which is the point.
+
 ## [2026-07-25d] — Consumer table: `command-center`, `bartmail`, `barton-lms`
 
 ### Changed
