@@ -59,10 +59,14 @@ real consumers without any of them having to fork:
   **replaces** rather than appends because two competing Tailwind width classes in one
   string resolve by stylesheet order, not string order, and this repo carries no
   `tailwind-merge`. Keep the page layout's left padding in step (`md:pl-60` by default).
-- **`className` / `style`** — `barton-lms` themes with inline `style={{}}` objects and CSS
-  custom properties (`background: "var(--surface)"`) rather than Tailwind colour classes.
+- **`className` / `style`** — for a consumer that themes with inline `style={{}}` objects and
+  CSS custom properties (`background: "var(--surface)"`) rather than Tailwind colour classes.
   `style` covers the shell; **it does not restyle the individual rows** — a fully themed
-  variant is not solved yet and should not be faked with a prop that half-works.
+  variant is not solved yet and should not be faked with a prop that half-works. In practice
+  that limit bites: `barton-lms` is dark-themed and mounted **without** `style`, because
+  styling only the `<aside>` dark would have left this component's `text-slate-600` row
+  labels illegible on it. A dark consumer gets the light shell until a real themed variant
+  is designed.
 - **`footer`** — a slot for an environment badge / tenant switcher / version string,
   rather than growing a prop per app.
 - **`exact` on a nav entry** — the active check matches whole path *segments*, so a row is

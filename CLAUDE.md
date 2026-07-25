@@ -84,6 +84,9 @@ off.
 | `barttech-next-template` | `src/app-ui` | `main` | `src/components/LeftNav.tsx` shim | No Vercel project — nothing to deploy-verify. |
 | `checkout-engine` | `src/app-ui` | `main` | `src/components/AdminShell.tsx` (client) | `homeHref="/admin"`, Dashboard row uses `exact`, `changelogHref`/`helpHref` `null`. Nav suppressed on `/admin/login`. |
 | `ownerfoundry-website` | `src/app-ui` | `main` | `src/components/AdminShell.tsx` (client) | `homeHref="/admin/dashboard"`, `changelogHref`/`helpHref` `null`. Nav suppressed on `/admin/login`. Also mounts the private LMS submodule — see the stale-cache note below. |
+| `command-center` | `src/app-ui` | **`master`** | `src/components/nav.tsx` (config wrapper, exports `Nav`) | Replaced the component this one was built from. `changelogHref`/`helpHref` `null` — no `/changelog`, and Help is already a top-level `NAV_ITEMS` entry. lucide icons on every row. |
+| `bartmail` | `src/app-ui` | `main` | `src/app/(dashboard)/DashboardShell.tsx` | `helpHref="/help"`, `changelogHref={null}`. No icons, no `userEmail`/`onSignOut` (sign-out lives on its `/account` page, which is the last nav entry). Its sidebar was dark `#1e293b` and is now the standard light shell. |
+| `barton-lms` | `src/app-ui` | `main` | `src/components/AdminShell.tsx` | `homeHref="/admin/dashboard"`, `widthClassName="w-56"`, `helpHref="/admin/help"`, `changelogHref={null}`. **`style` deliberately NOT passed** — see below. Its first-ever submodule, so `.gitmodules` and `submodules: recursive` were both new. |
 
 **Both greenfield mounts hide the nav on their login page**, via a client wrapper that
 checks `usePathname()`. A `layout.tsx` is a server component and cannot read the pathname,
@@ -97,16 +100,17 @@ failing. The script carries an empty-worktree guard that purges `.git/modules/<s
 re-inits with `--force`; **any new submodule must be added to that guard's list**, or the
 first stale-cache build after a bump breaks with no local symptom.
 
+**`style` was NOT used by `barton-lms`, and the reason matters.** That app is dark-themed
+(`body { color: #e2e2f0 }` on `--bg: #0f0f1a`), and `style` themes the `<aside>` **only**,
+never the rows. Passing `background: var(--surface)` would therefore have put this
+component's `text-slate-600` row labels on `#1a1a2e` — illegible. The mount ships the
+standard light shell instead: a visible restyle, but readable. **This is the one thing the
+component genuinely cannot express**, and the honest answer is a themed variant designed
+properly, not a third half-working prop. Until then, do not offer `style` as the answer to
+a dark-themed consumer.
+
 Remaining intended consumers:
 
-- **`command-center`** — `src/components/nav.tsx` hardcodes its `NAV_ITEMS`, "Command
-  Centre", the `B` initial and its own `signOut`; those become props. Its default branch
-  is **`master`**, not `main`, and its bottom block today has no Changelog/Help rows (it
-  has a `/help` entry inside `NAV_ITEMS` instead).
-- **`barton-lms`** — `AdminNav.tsx` / `AdminShell.tsx`. Themed with inline `style={{}}`
-  and CSS custom properties, `w-56`/220px, rooted at `/admin/dashboard`. Needs
-  `homeHref`, `widthClassName`, `style`; a full CSS-variable theme for the *rows* is not
-  solved and would need real design work, not another prop.
 - **`cloud-plus-v2`** — admin is tab-based. **Out of scope**, deliberately.
 
 ## Tailwind: the consumer must scan this directory

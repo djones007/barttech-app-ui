@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-07-25d] — Consumer table: `command-center`, `bartmail`, `barton-lms`
+
+### Changed
+- Docs only. The three apps that already had their own left nav are now mounted, so they move out of "intended consumers" and into the table: `command-center` (branch `master`), `bartmail`, `barton-lms`. Six consumers total; `cloud-plus-v2` remains deliberately out of scope (tab-based admin).
+- **Recorded the one thing this component cannot express**, found mounting `barton-lms`: it is dark-themed, and `style` covers the `<aside>` but explicitly not the rows, so passing its dark surface would have put `text-slate-600` labels on `#1a1a2e`. It mounted **without** `style`, taking the standard light shell. `style` must stop being offered as the answer for a dark consumer — the answer is a themed variant, designed properly, not a third half-working prop.
+
 ## [2026-07-25c] — Name every border colour explicitly
 
 ### Fixed
