@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-07-31] — Dependency updates (Dependabot #1, #2)
+
+### Changed
+- `actions/checkout` v5 → v7 and `actions/setup-node` v5 → v7 in `.github/workflows/ci.yml` (#1).
+- `globals` 16.5.0 → 17.7.0 (#2) — a dev-only major, in the ESLint ecosystem but **not** one of the three estate-wide holds (`typescript`, `eslint`, `@eslint/*`). This repo's CI runs a real `npm run lint` plus `npm run typecheck`, both green on the PR, so it was merged rather than held: the documented reason for the holds is that a lint-less repo can merge a breaking ESLint major on a green tick, which does not apply here.
+- Recorded retrospectively during the 2026-07-31 wrap. Both PRs were merged on 2026-07-30 without an entry — a squash-merge of a Dependabot PR touches only `package.json`/`package-lock.json`/workflow files, so nothing forces the changelog the way an ordinary commit does. A merge to `main` is still a change to this repo and gets an entry like any other.
+
 ## [2026-07-25e] — Consumer table: `cloud-plus-v2` (the tab-based one)
 
 ### Changed
