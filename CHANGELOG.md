@@ -19,6 +19,12 @@ All notable changes to this project are documented here. Format follows [Keep a 
   ("Release to ticket", "Denylist sender", "Set priority") instead of only Edit/Archive/Delete.
   Actions are bulk-bar-only unless they set `row: true`; a queue with six bulk actions does not want
   six buttons on every row. Destructive actions (`danger: true`) confirm by default.
+- **Select-style actions** — an action declaring `options: {value,label}[]` renders a `<select>` in
+  the bar and passes the chosen value to `run` as its second argument. This is the shape "Set
+  status" / "Set priority" / "Assign to" actually have: a fixed verb with a variable object.
+  Without it each value needs its own button, and a real queue (three statuses × four priorities ×
+  N agents) produces a bar nobody can use. Fires on change with no separate Apply, and resets to the
+  placeholder so the same value can be applied twice in a row.
 
 ### Fixed
 - **Selection is now keyed by a stable row id, not an array index.** The pre-promotion copies stored

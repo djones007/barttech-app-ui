@@ -18,12 +18,22 @@ import { useEffect, useMemo, useRef, useState } from "react";
 // wrong rows is not a cosmetic bug.
 // ---------------------------------------------------------------------------
 
+export type BulkActionOption = { value: string; label: string };
+
 export type BulkAction<T> = {
   /** Stable key — also used as the React key. */
   key: string;
   label: string;
   /** Optional icon component; no icon library is a dependency here. */
   icon?: React.ElementType;
+  /**
+   * Renders a `<select>` in the bar instead of a button, and passes the chosen
+   * value to `run` as its second argument. This is what "Set status" / "Assign
+   * to" need: a queue action whose verb is fixed but whose object is not.
+   * Without it every value becomes its own button and the bar is unusable at
+   * three statuses × four priorities × N agents.
+   */
+  options?: BulkActionOption[];
   /** Renders in red and, unless `confirm` is set, gets a default confirmation. */
   danger?: boolean;
   /**
@@ -40,7 +50,8 @@ export type BulkAction<T> = {
    * every row.
    */
   row?: boolean;
-  run: (rows: T[]) => void | Promise<void>;
+  /** `value` is set only for actions declaring `options`. */
+  run: (rows: T[], value?: string) => void | Promise<void>;
 };
 
 export type BulkSelection<T> = {
@@ -201,13 +212,13 @@ export function BulkActionBar<T>({
 
   const visible = actions.filter((a) => !a.available || a.available(selectedRows));
 
-  async function run(action: BulkAction<T>) {
+  async function run(action: BulkAction<T>, value?: string) {
     if (busy) return;
     const message = resolveConfirm(action, selectedRows);
     if (message && !window.confirm(message)) return;
     setBusy(action.key);
     try {
-      await action.run(selectedRows);
+      await action.run(selectedRows, value);
       clear();
     } finally {
       setBusy(null);
@@ -229,6 +240,32 @@ export function BulkActionBar<T>({
       <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
         {visible.map((a) => {
           const Icon = a.icon;
+
+          // Select-style action: the verb is fixed, the object is chosen.
+          // Fires on change (no separate Apply button) and resets to the
+          // placeholder, so the same value can be applied twice in a row.
+          if (a.options) {
+            return (
+              <select
+                key={a.key}
+                value=""
+                disabled={!!busy}
+                aria-label={a.label}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  e.currentTarget.value = "";
+                  if (v) void run(a, v);
+                }}
+                className="rounded-md bg-white/10 px-2.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-white/20 disabled:opacity-50 [&>option]:text-slate-900"
+              >
+                <option value="">{busy === a.key ? "Working…" : a.label}</option>
+                {a.options.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            );
+          }
+
           return (
             <button
               key={a.key}
