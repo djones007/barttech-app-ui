@@ -72,8 +72,37 @@ used**. Precedent: `barton-lms-engine`.
 | File | Exports |
 |------|---------|
 | `LeftNav.tsx` | `LeftNav` + types `NavItem`, `NavLinkItem`, `NavChildItem`, `NavGroupItem`, `LeftNavProps`. Client component. Full prop table in `README.md`. |
+| `BulkActions.tsx` | `useBulkSelection`, `BulkActionBar`, `BulkCheckbox` + types `BulkAction`, `BulkSelection`. Client component. |
+| `DataTable.tsx` | `DataTable` + types `Column`, `DataTableProps`, and the `IconEdit`/`IconArchive`/`IconTrash` SVGs. Client component. |
+| `DateRangePicker.tsx` | `DateRangePicker`, `presetToRange` + type `DateRange`. |
 
 No barrel `index.ts` — import the file directly (`@/app-ui/LeftNav`), matching web-core.
+
+## Bulk selection is a primitive, not a table feature
+
+`useBulkSelection` + `BulkActionBar` live in `BulkActions.tsx` **separately from `DataTable`**,
+and that separation is the point. `support-engine`'s spam queue renders as cards, not rows —
+the body preview that makes a suppressed message reviewable does not survive a table cell —
+but it needs identical select / select-all / act-on-many behaviour. A card list gets it by
+calling the hook directly. `DataTable` is just the most common consumer of the same primitive.
+
+**Selection is keyed by a caller-supplied stable id, never an array index.** The pre-promotion
+copies keyed on index, which silently acts on the wrong rows the moment the list is re-sorted,
+re-filtered or revalidated between selecting and clicking. `DataTable` defaults `getRowId` to
+`row.id`; pass the prop explicitly when rows have no `id`. Destructive actions (`danger: true`)
+confirm by default — pass `confirm: false` to opt out.
+
+## `DataTable` was promoted here on 2026-07-31
+
+`barttech-next-template`, `competition-engine`, `lead-engine` and `support-engine` each carried a
+**byte-identical** 597-line copy (verified by md5 before the move). Promoted at the point where
+nothing had diverged yet, which is the only cheap moment — after drift it becomes a merge, not a
+move. Each consumer now shims `src/components/DataTable.tsx` → `export * from "@/app-ui/DataTable"`,
+so no call site changed. `DateRangePicker.tsx` came with it because `DataTable` imports it.
+
+The legacy `onEdit`/`onArchive`/`onDelete` props still work exactly as before (icon button per row
+plus an entry in the bulk bar) — they are mapped internally onto the new generic `actions` array so
+there is one code path. Golden rule 4 applies: add, do not break.
 
 ## Consumers
 

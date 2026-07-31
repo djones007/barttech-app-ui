@@ -2,6 +2,39 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-07-31b] — Bulk selection primitive; `DataTable` promoted here
+
+### Added
+- **`BulkActions.tsx`** — `useBulkSelection` (hook), `BulkActionBar`, `BulkCheckbox`, and the
+  `BulkAction`/`BulkSelection` types. Deliberately **separate from `DataTable`**: bulk selection is
+  not a table feature. `support-engine`'s spam queue renders as cards (a body preview does not
+  survive a table cell) and needs identical select / select-all / act-on-many behaviour — it calls
+  the hook directly. `DataTable` is simply the most common consumer of the same primitive.
+- **`DataTable.tsx` + `DateRangePicker.tsx`** promoted from `barttech-next-template`. All four repos
+  carrying it (`barttech-next-template`, `competition-engine`, `lead-engine`, `support-engine`) had
+  **byte-identical** 597-line copies — verified by md5 before moving. Promoted at the point where
+  nothing had diverged, which is the only cheap moment to do it; after drift it is a merge, not a
+  move. `DateRangePicker` came along because `DataTable` imports it.
+- **Generic `actions: BulkAction[]` prop on `DataTable`**, so a queue can offer real domain actions
+  ("Release to ticket", "Denylist sender", "Set priority") instead of only Edit/Archive/Delete.
+  Actions are bulk-bar-only unless they set `row: true`; a queue with six bulk actions does not want
+  six buttons on every row. Destructive actions (`danger: true`) confirm by default.
+
+### Fixed
+- **Selection is now keyed by a stable row id, not an array index.** The pre-promotion copies stored
+  selected *indices* into the unsorted source array, so re-sorting, re-filtering, or a server
+  revalidation between selecting and clicking would apply the action to whichever rows now sat at
+  those positions. Silent, and the failure mode is "bulk action hit the wrong records" — not
+  cosmetic. `getRowId` defaults to `row.id`; pass it explicitly when rows have no `id`.
+- **Selected ids that leave the visible set are dropped**, so the "N selected" count can never claim
+  more than is actually actionable after a delete or a revalidate.
+- **The bulk bar disables itself while an action runs.** Double-clicking "Delete" previously fired
+  two server actions against the same rows.
+
+### Changed
+- `onEdit` / `onArchive` / `onDelete` are unchanged for callers — they are mapped internally onto the
+  new `actions` array so there is one code path rather than two. Golden rule 4: add, do not break.
+
 ## [2026-07-31] — Dependency updates (Dependabot #1, #2)
 
 ### Changed
