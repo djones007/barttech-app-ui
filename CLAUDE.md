@@ -75,8 +75,9 @@ used**. Precedent: `barton-lms-engine`.
 | `BulkActions.tsx` | `useBulkSelection`, `BulkActionBar`, `BulkCheckbox` + types `BulkAction`, `BulkSelection`. Client component. |
 | `DataTable.tsx` | `DataTable` + types `Column`, `DataTableProps`, and the `IconEdit`/`IconArchive`/`IconTrash` SVGs. Client component. |
 | `DateRangePicker.tsx` | `DateRangePicker`, `presetToRange` + type `DateRange`. |
+| `SaveButton.tsx` | `SaveButton`. Client component. Submit button for a server-action form; shows pending + saved state. Props: `children`, `className`, `savedLabel`, `pendingLabel`, `savedForMs`. |
 
-No barrel `index.ts` — import the file directly (`@/app-ui/LeftNav`), matching web-core.
+No barrel `index.ts` — import the file directly (`@/app-ui/LeftNav`, `@/app-ui/SaveButton`), matching web-core.
 
 ## Bulk selection is a primitive, not a table feature
 

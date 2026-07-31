@@ -2,6 +2,24 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-07-31c] — `SaveButton`
+
+### Added
+- **`SaveButton.tsx`** — submit button for a server-action form that reports in-flight ("Saving…",
+  disabled) and just-finished ("Saved", briefly) state, with a `role="status"` announcement so the
+  confirmation is not purely visual.
+
+  The default shape for a server-action form is a plain `<button type="submit">Save</button>`, and on
+  a fast save that is indistinguishable from a broken button: the action runs, the route revalidates,
+  and the page re-renders with the values it already had. Nothing moves. Users respond by clicking
+  again or reloading to check — and a double submit on a non-idempotent form is a real bug, not just
+  an annoyance. Promoted here rather than kept per-repo because it is a generic mechanism with no
+  brand surface, which is exactly this repo's remit.
+
+  It has to be a client component: `useFormStatus()` only reports a form's status when read from a
+  component rendered *inside* that `<form>`, so the page owning the form cannot read it — a
+  constraint of the hook, not a styling preference.
+
 ## [2026-07-31b] — Bulk selection primitive; `DataTable` promoted here
 
 ### Added
