@@ -2,6 +2,34 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-07-31d] — `external` nav rows
+
+### Added
+- **`external?: boolean` on `NavLinkItem` and `NavChildItem`.** Purely additive — every existing
+  prop and export is unchanged, so no consumer has to move.
+
+  A row marked `external` points at a *different application* rather than a route in this one.
+  `command-center` has three (the Support Engine, the Lead Engine, BartMail) and they were being
+  rendered through `next/link` as ordinary same-tab navigations: the user was dumped out of the app
+  with no way back, and nothing in the row warned them beforehand. An external row now renders as a
+  plain `<a target="_blank" rel="noopener noreferrer">` — not `next/link`, because there is no
+  client-side route to push and nothing cross-origin for the router to prefetch — with a small
+  external-link glyph (a new inline SVG; this repo still has no icon library and must not gain one)
+  and an `sr-only` "(opens in a new tab)", since a glyph on its own tells a screen-reader user
+  nothing.
+
+### Changed
+- **Active-state checks go through a new `isRowActive(pathname, item)` helper**, which
+  short-circuits `external` rows to `false` before consulting the existing `isActive` string check.
+  Both are internal; the export surface is untouched.
+
+  Skipping the check matters more than "an external row should not look active". `usePathname()`
+  returns a path and can never equal an absolute URL, so the comparison is structurally always
+  false — but it also feeds `hasActiveChild`, which decides whether a collapsed group highlights
+  and whether a group auto-expands for the current route. Left in, it was dead work re-run on every
+  route change over URLs it could never match. The pinned Changelog and Help rows still call
+  `isActive` directly, since those hrefs are internal by definition.
+
 ## [2026-07-31c] — `SaveButton`
 
 ### Added

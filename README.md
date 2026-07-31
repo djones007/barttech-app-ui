@@ -37,7 +37,7 @@ how web-core is consumed.
 |------|------|---------|-------|
 | `appName` | `string` | — | Sidebar header + mobile top bar. |
 | `appInitial` | `string` | first char of `appName` | Letter in the logo square. |
-| `navItems` | `NavItem[]` | — | Mix `{ kind: "link" }` and `{ kind: "group" }` entries. Each link (and each group child) takes an optional `exact` — see below. |
+| `navItems` | `NavItem[]` | — | Mix `{ kind: "link" }` and `{ kind: "group" }` entries. Each link (and each group child) takes an optional `exact` and `external` — see below. |
 | `userEmail` | `string` | — | Shown above Sign out. |
 | `onSignOut` | `() => void` | — | Pass a server action. Omit and the row is not rendered. |
 | `changelogHref` | `string \| null` | `"/changelog"` | `null` hides the row. |
@@ -75,6 +75,20 @@ real consumers without any of them having to fork:
   of the nav: `checkout-engine`'s Dashboard points at `/admin`, and without `exact: true`
   it would render active on `/admin/orders`, `/admin/settings` and every other page. `/`
   is always treated as exact for the same reason.
+- **`external` on a nav entry** — the row points at a *different application*
+  (`https://assistlynow.com`), not a route in this one. `command-center` has three: the Support
+  Engine, Lead Engine and BartMail. Without it they rendered through `next/link` as same-tab
+  navigations that dumped the user out of the app with no way back, and no indication before
+  clicking that the row would do that. With it the row is a plain `<a target="_blank"
+  rel="noopener noreferrer">` with a small external-link glyph and an `sr-only` "(opens in a new
+  tab)", since a glyph alone tells a screen-reader user nothing.
+
+  It also **skips the active check**, which matters more than it looks. `usePathname()` returns a
+  path and can never equal an absolute URL, so an external row is structurally always inactive —
+  but the same comparison also feeds `hasActiveChild`, which decides whether a collapsed group
+  highlights and whether a group auto-expands on the current route. Running it over absolute URLs
+  is dead work on every route change for an answer that cannot change. Use `isRowActive`, not
+  `isActive`, at any new call site handling a nav entry.
 - **`changelogHref: null` / `helpHref: null`** — `checkout-engine`'s and
   `ownerfoundry-website`'s admin areas have no `/changelog` or `/help` page, and a pinned
   nav row that 404s is worse than no row.

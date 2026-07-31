@@ -19,6 +19,19 @@ export type NavLinkItem = {
    * page, because those are all descendants of it.
    */
   exact?: boolean;
+  /**
+   * This row points at a different application, not a route in this one
+   * (`https://assistlynow.com`). Renders a plain `<a target="_blank"
+   * rel="noopener noreferrer">` with a visible external-link affordance, and
+   * is never marked active.
+   *
+   * The active check is skipped rather than merely failing: `isActive`
+   * compares against `usePathname()`, which is a path (`/tickets`) and can
+   * never equal an absolute URL. Left in, an external row is permanently
+   * inactive AND — worse — it drags its parent group's `hasActiveChild` to
+   * false, so a group of nothing but external links never highlights at all.
+   */
+  external?: boolean;
 };
 
 export type NavChildItem = {
@@ -27,6 +40,8 @@ export type NavChildItem = {
   icon?: React.ElementType;
   /** See `NavLinkItem.exact`. */
   exact?: boolean;
+  /** See `NavLinkItem.external`. */
+  external?: boolean;
 };
 
 export type NavGroupItem = {
@@ -109,6 +124,24 @@ function isActive(pathname: string, href: string, exact?: boolean): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
+/**
+ * `isActive` for a nav row, short-circuiting external rows to `false`.
+ *
+ * A row pointing at another application is never the current page, and its
+ * `href` is an absolute URL that `usePathname()` cannot match anyway. Use this
+ * rather than `isActive` at every call site that handles a `NavLinkItem` or
+ * `NavChildItem` — including the group-expansion checks, or a group whose
+ * children are all external would be evaluated against absolute URLs on every
+ * route change for an answer that is structurally always false.
+ */
+function isRowActive(
+  pathname: string,
+  item: { href: string; exact?: boolean; external?: boolean },
+): boolean {
+  if (item.external) return false;
+  return isActive(pathname, item.href, item.exact);
+}
+
 // --- Inline SVGs (no lucide dependency; pass lucide icons in via the icon prop) ---
 
 function IconMenu({ className }: { className?: string }) {
@@ -151,6 +184,15 @@ function IconHelp({ className }: { className?: string }) {
     </svg>
   );
 }
+function IconExternal({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+      <polyline points="15 3 21 3 21 9" />
+      <line x1="10" y1="14" x2="21" y2="3" />
+    </svg>
+  );
+}
 function IconLogOut({ className }: { className?: string }) {
   return (
     <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -169,6 +211,7 @@ function NavLinkRow({
   icon: Icon,
   active,
   nested,
+  external,
   onNavigate,
 }: {
   href: string;
@@ -176,8 +219,47 @@ function NavLinkRow({
   icon?: React.ElementType;
   active: boolean;
   nested?: boolean;
+  external?: boolean;
   onNavigate: () => void;
 }) {
+  const className = cls(
+    "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+    nested && "ml-3 py-1.5",
+    active ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100",
+  );
+
+  const body = (
+    <>
+      {Icon && <Icon className="h-4 w-4 shrink-0" />}
+      <span className="truncate">{label}</span>
+      {external && (
+        <>
+          <IconExternal className="ml-auto h-3.5 w-3.5 shrink-0 opacity-60" />
+          {/* The icon is decorative (aria-hidden), so the warning that this
+              leaves the app has to reach screen readers some other way. */}
+          <span className="sr-only">(opens in a new tab)</span>
+        </>
+      )}
+    </>
+  );
+
+  // A plain anchor, not `next/link`: this is a full document navigation to a
+  // different origin, so there is no client-side route to push and nothing for
+  // the router to prefetch.
+  if (external) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={onNavigate}
+        className={className}
+      >
+        {body}
+      </a>
+    );
+  }
+
   return (
     <Link
       href={href}
@@ -185,14 +267,9 @@ function NavLinkRow({
       // Screen readers get no signal from a background colour. Without this the
       // active row is indistinguishable from every other row.
       aria-current={active ? "page" : undefined}
-      className={cls(
-        "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-        nested && "ml-3 py-1.5",
-        active ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100",
-      )}
+      className={className}
     >
-      {Icon && <Icon className="h-4 w-4 shrink-0" />}
-      <span className="truncate">{label}</span>
+      {body}
     </Link>
   );
 }
@@ -210,7 +287,7 @@ function NavGroupRow({
   onToggle: () => void;
   onNavigate: () => void;
 }) {
-  const hasActiveChild = item.children.some((c) => isActive(pathname, c.href, c.exact));
+  const hasActiveChild = item.children.some((c) => isRowActive(pathname, c));
   const Icon = item.icon;
 
   return (
@@ -243,7 +320,8 @@ function NavGroupRow({
               label={child.label}
               icon={child.icon}
               nested
-              active={isActive(pathname, child.href, child.exact)}
+              external={child.external}
+              active={isRowActive(pathname, child)}
               onNavigate={onNavigate}
             />
           ))}
@@ -301,7 +379,7 @@ export function LeftNav({
   const [overrides, setOverrides] = useState<Record<string, boolean>>({});
 
   const openFor = (g: NavGroupItem, ov: Record<string, boolean>) =>
-    ov[g.label] ?? g.children.some((c) => isActive(pathname, c.href, c.exact));
+    ov[g.label] ?? g.children.some((c) => isRowActive(pathname, c));
 
   const groupOpen = (g: NavGroupItem) => openFor(g, overrides);
 
@@ -392,7 +470,8 @@ export function LeftNav({
                 href={item.href}
                 label={item.label}
                 icon={item.icon}
-                active={isActive(pathname, item.href, item.exact)}
+                external={item.external}
+                active={isRowActive(pathname, item)}
                 onNavigate={closeMobile}
               />
             ) : (

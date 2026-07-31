@@ -72,6 +72,20 @@ used**. Precedent: `barton-lms-engine`.
 | File | Exports |
 |------|---------|
 | `LeftNav.tsx` | `LeftNav` + types `NavItem`, `NavLinkItem`, `NavChildItem`, `NavGroupItem`, `LeftNavProps`. Client component. Full prop table in `README.md`. |
+
+**Nav rows can point out of the app.** `NavLinkItem` and `NavChildItem` both take an
+optional `external?: boolean` (added 2026-07-31 for `command-center`, which links to the
+Support Engine, Lead Engine and BartMail). An external row renders as a plain
+`<a target="_blank" rel="noopener noreferrer">` with the built-in `IconExternal` glyph and
+an `sr-only` "(opens in a new tab)" — not through `next/link`, because there is no
+client-side route to push and nothing cross-origin for the router to prefetch.
+
+External rows are **never active**, and the check is short-circuited rather than left to
+fail: `usePathname()` returns a path and cannot equal an absolute URL, so the answer is
+structurally always false, and the same comparison feeds `hasActiveChild` (which decides
+group highlighting and auto-expansion). **Any new call site handling a nav entry must use
+`isRowActive(pathname, item)`, not `isActive(pathname, href, exact)`** — `isActive` is the
+lower-level string check and knows nothing about `external`.
 | `BulkActions.tsx` | `useBulkSelection`, `BulkActionBar`, `BulkCheckbox` + types `BulkAction`, `BulkSelection`. Client component. |
 | `DataTable.tsx` | `DataTable` + types `Column`, `DataTableProps`, and the `IconEdit`/`IconArchive`/`IconTrash` SVGs. Client component. |
 | `DateRangePicker.tsx` | `DateRangePicker`, `presetToRange` + type `DateRange`. |
