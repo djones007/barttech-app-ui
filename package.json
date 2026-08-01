@@ -1,0 +1,33 @@
+{
+  "name": "@barttech/app-ui",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared brand-neutral app-shell UI for the Barttech estate (LeftNav, …) — mounted as a git submodule in each app that has an admin/dashboard shell. Source-only, no build step; consumers transpile the .tsx through their own Next build.",
+  "license": "UNLICENSED",
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "next": ">=15",
+    "react": ">=19",
+    "react-dom": ">=19"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.7.0",
+    "next": "^16.2.11",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.65.0"
+  },
+  "overrides": {
+    "postcss": "^8.5.18",
+    "sharp": ">=0.35.0"
+  }
+}

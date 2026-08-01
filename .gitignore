@@ -1,0 +1,12 @@
+node_modules/
+.DS_Store
+*.log
+.vercel
+
+# This repo is PUBLIC and holds no runtime config — there should never be an
+# env file here at all. Ignored anyway: the cost is one line, the cost of the
+# other outcome is a secret in a public repo. Matches the estate baseline.
+.env
+.env.*
+.env.local
+.env.*.local

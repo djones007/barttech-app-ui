@@ -1,0 +1,36 @@
+name: CI
+
+# app-ui is consumed as a git submodule by every app with an admin/dashboard shell.
+# It gates ITSELF for the same reason barttech-web-core does: a component here that
+# is vendored into N repos and linted only as a side effect of being vendored means
+# one error reddens N builds at once, against files none of those repos may edit
+# (a fix made in a consumer's copy is discarded on the next pointer bump). The gate
+# belongs where the source lives. Consumers exclude the vendored path from their
+# own lint.
+#
+# One job, not three: GitHub rounds every job up to a full billed minute
+# (see memory/feedback_github_actions_billing.md). This repo is public, so its
+# minutes are free — but the estate pattern stays consistent.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      # `if: always()` so a lint failure never hides a type error — both are
+      # reported in one run rather than one masking the other.
+      - if: always()
+        run: npm run typecheck
