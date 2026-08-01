@@ -102,6 +102,15 @@ export type LeftNavProps = {
    * environment badge, a tenant switcher, a version string.
    */
   footer?: React.ReactNode;
+  /**
+   * Hex colour for the app logo square and the active nav row background.
+   * Defaults to `#0f172a` (slate-900). Must have ≥ 4.5:1 contrast ratio
+   * against white — every Tailwind `*-700` shade and darker satisfies this.
+   *
+   * Passed as an inline `backgroundColor` style so consuming apps can supply
+   * any hex without Tailwind safelisting.
+   */
+  accent?: string;
 };
 
 // --- Helpers ---
@@ -213,6 +222,7 @@ function NavLinkRow({
   nested,
   external,
   onNavigate,
+  accent,
 }: {
   href: string;
   label: string;
@@ -221,12 +231,14 @@ function NavLinkRow({
   nested?: boolean;
   external?: boolean;
   onNavigate: () => void;
+  accent: string;
 }) {
   const className = cls(
     "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
     nested && "ml-3 py-1.5",
-    active ? "bg-slate-900 text-white" : "text-slate-600 hover:bg-slate-100",
+    active ? "text-white" : "text-slate-600 hover:bg-slate-100",
   );
+  const activeStyle = active ? { backgroundColor: accent } : undefined;
 
   const body = (
     <>
@@ -254,6 +266,7 @@ function NavLinkRow({
         rel="noopener noreferrer"
         onClick={onNavigate}
         className={className}
+        style={activeStyle}
       >
         {body}
       </a>
@@ -268,6 +281,7 @@ function NavLinkRow({
       // active row is indistinguishable from every other row.
       aria-current={active ? "page" : undefined}
       className={className}
+      style={activeStyle}
     >
       {body}
     </Link>
@@ -280,12 +294,14 @@ function NavGroupRow({
   open,
   onToggle,
   onNavigate,
+  accent,
 }: {
   item: NavGroupItem;
   pathname: string;
   open: boolean;
   onToggle: () => void;
   onNavigate: () => void;
+  accent: string;
 }) {
   const hasActiveChild = item.children.some((c) => isRowActive(pathname, c));
   const Icon = item.icon;
@@ -323,6 +339,7 @@ function NavGroupRow({
               external={child.external}
               active={isRowActive(pathname, child)}
               onNavigate={onNavigate}
+              accent={accent}
             />
           ))}
         </div>
@@ -366,6 +383,7 @@ export function LeftNav({
   className,
   style,
   footer,
+  accent = "#0f172a",
 }: LeftNavProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -446,7 +464,10 @@ export function LeftNav({
         {/* App header */}
         <div className="flex h-14 shrink-0 items-center gap-2 border-b border-slate-200 px-4">
           <Link href={homeHref} onClick={closeMobile} className="flex min-w-0 items-center gap-2">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-slate-900 text-xs font-bold text-white">
+            <div
+              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-xs font-bold text-white"
+              style={{ backgroundColor: accent }}
+            >
               {initial}
             </div>
             <span className="truncate text-sm font-semibold text-slate-900">{appName}</span>
@@ -473,6 +494,7 @@ export function LeftNav({
                 external={item.external}
                 active={isRowActive(pathname, item)}
                 onNavigate={closeMobile}
+                accent={accent}
               />
             ) : (
               <NavGroupRow
@@ -482,6 +504,7 @@ export function LeftNav({
                 open={groupOpen(item)}
                 onToggle={() => toggleGroup(item)}
                 onNavigate={closeMobile}
+                accent={accent}
               />
             ),
           )}
@@ -500,6 +523,7 @@ export function LeftNav({
                   icon={IconChangelog}
                   active={isActive(pathname, changelogHref)}
                   onNavigate={closeMobile}
+                  accent={accent}
                 />
               )}
               {helpHref && (
@@ -509,6 +533,7 @@ export function LeftNav({
                   icon={IconHelp}
                   active={isActive(pathname, helpHref)}
                   onNavigate={closeMobile}
+                  accent={accent}
                 />
               )}
             </div>

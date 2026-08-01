@@ -1,6 +1,11 @@
 # Changelog
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
+## [2026-08-01b] — accent prop on LeftNav
+
+### Added
+- **`accent?: string` prop on `LeftNav`** — hex colour applied to the app logo square and the active nav row background. Defaults to `#0f172a` (slate-900, existing behaviour). Must have ≥ 4.5:1 contrast against white. Uses inline `backgroundColor` style to avoid Tailwind safelisting constraints.
+
 ## [2026-08-01 — later] — Public-hygiene CI gate
 
 ### Added
