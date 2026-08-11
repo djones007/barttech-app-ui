@@ -1,6 +1,12 @@
 # Changelog
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
+## [2026-08-11] — Security hardening: CI persist-credentials (Aikido audit)
+
+### Fixed
+- Added `persist-credentials: false` to all `actions/checkout` steps in GitHub Actions workflows. Prevents the GitHub Actions token from persisting in the git credential helper after checkout, reducing blast radius if a subsequent workflow step is compromised (Aikido issue 11).
+
+
 ## [2026-08-01b] — accent prop on LeftNav
 
 ### Added
