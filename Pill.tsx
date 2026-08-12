@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
-import { accessiblePair } from "./contrast";
+import { accessiblePair, parseColor, toHex } from "./contrast";
 
 /**
  * A small coloured chip — label, tag, category or status badge — whose
@@ -60,15 +60,23 @@ export function Pill({
 }
 
 /**
- * The same guarantee for a caller that needs a coloured DOT rather than a chip
- * — a status marker with no text of its own. There is no foreground to derive,
- * so this is only the background, but routing it through here keeps dot and
- * chip visually identical when both appear in one row.
+ * A coloured DOT — a swatch or status marker carrying no text of its own.
+ *
+ * Deliberately does NOT go through `accessiblePair`. There is no foreground to
+ * derive, so the AA text rule does not apply, and nudging the lightness here
+ * would misrepresent the stored value: a swatch shown next to "your colour is
+ * #ff0000" must be that colour, not an adjusted neighbour of it. The only thing
+ * this adds over an inline style is consistent handling of a missing or
+ * unparseable value.
+ *
+ * (WCAG 1.4.11 asks 3:1 for meaningful non-text UI against what it sits on —
+ * that is a different measurement against the page background, not the
+ * foreground/background pairing this file solves, and it is not enforced here.)
  */
 export function PillDot({
   color,
   className = "w-2.5 h-2.5 rounded-full",
-  fallbackColor,
+  fallbackColor = "#6366f1",
   title,
 }: {
   color?: string | null;
@@ -76,7 +84,8 @@ export function PillDot({
   fallbackColor?: string;
   title?: string;
 }) {
-  const { background } = accessiblePair(color, fallbackColor ? { fallback: fallbackColor } : {});
+  const parsed = parseColor(color);
+  const background = parsed ? toHex(parsed) : fallbackColor;
   return <span className={className} title={title} style={{ backgroundColor: background }} />;
 }
 
