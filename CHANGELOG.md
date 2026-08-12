@@ -5,7 +5,7 @@ All notable changes to this project are documented here. Format follows [Keep a 
 
 ### Added
 - **`contrast.ts`** — WCAG 2.1 contrast maths (`relativeLuminance`, `contrastRatio`, `parseColor`, `toHex`) plus `accessiblePair(colour)`, which returns a background/foreground pair guaranteed to meet a minimum ratio (AA by default). Pure TypeScript, no React, no dependencies.
-- **`Pill.tsx`** — `Pill` and `PillDot`, a coloured chip whose foreground is derived from its background rather than hard-coded. Server-safe: no hooks, no `'use client'`.
+- **`Pill.tsx`** — `Pill` and `PillDot`. `Pill` is a coloured chip whose foreground is derived from its background rather than hard-coded. `PillDot` is a plain swatch and deliberately does *not* adjust the colour — it carries no text, so the AA rule does not apply, and a swatch presented as "your colour" must be the stored value rather than an adjusted neighbour of it. Both are server-safe: no hooks, no `'use client'`.
 - **`contrast.test.ts` + `npm test`, wired into CI** — sweeps 4,096 colours across the sRGB cube and fails if any produces a sub-AA pair, independently re-measuring each returned pair instead of trusting the reported ratio.
 - `@types/node` devDependency and `.testbuild/` ignores, for the `node --test` runner (same arrangement as the estate's other shared module).
 
