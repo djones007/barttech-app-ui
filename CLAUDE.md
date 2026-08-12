@@ -98,6 +98,38 @@ lower-level string check and knows nothing about `external`.
 | `DataTable.tsx` | `DataTable` + types `Column`, `DataTableProps`, and the `IconEdit`/`IconArchive`/`IconTrash` SVGs. Client component. |
 | `DateRangePicker.tsx` | `DateRangePicker`, `presetToRange` + type `DateRange`. |
 | `SaveButton.tsx` | `SaveButton`. Client component. Submit button for a server-action form; shows pending + saved state. Props: `children`, `className`, `savedLabel`, `pendingLabel`, `savedForMs`. |
+| `contrast.ts` | `accessiblePair`, `readableOn`, `contrastRatio`, `relativeLuminance`, `parseColor`, `toHex`, `AA_NORMAL`, `AA_LARGE`. Pure TS, no React — importable from a plain Node script or a test. |
+| `Pill.tsx` | `Pill`, `PillDot` + type `PillProps`. Server-safe (no hooks, no `'use client'`). |
+
+## Never hard-code a foreground over a data-driven background
+
+`Pill` and `contrast.ts` exist because of one recurring, review-proof bug: a chip painted
+with a colour that comes from *data* — a per-tenant accent, a category colour, anything a
+person can pick in a settings screen — and a text colour written into the markup as
+`text-white`. It reads perfectly against the mid-blue it was built with and is **invisible**
+against a saturated yellow (1.23:1, where AA wants 4.5). `tsc`, lint and the build all pass;
+a reviewer only catches it by loading a page that happens to contain that colour. One
+consumer shipped the same pattern to roughly twenty call sites before anyone noticed.
+
+So: **whenever the background comes from data, the foreground must be derived, not written.**
+Use `<Pill color={...}>`, or `readableOn(colour)` if you are painting the background yourself.
+
+Two things worth knowing before anyone "simplifies" this:
+
+- **Picking the better of black-or-white is not sufficient.** Pure red `#ff0000` is 4.00:1
+  against white and 4.44:1 against near-black — both fail, and the better of the two still
+  fails. A band of saturated mid-tones behaves the same. When no fixed foreground can reach
+  the threshold, `accessiblePair` nudges the background's **lightness** in HSL, so hue and
+  saturation survive and the chip still reads as the colour that was chosen. Across the sRGB
+  cube sampled every 17 steps (4,096 colours), 254 need that nudge — the other 94% are
+  returned untouched.
+- **The guarantee is asserted, not assumed.** `contrast.test.ts` sweeps those 4,096 colours
+  and fails if any produces a sub-AA pair, and independently re-measures each returned pair
+  rather than trusting the ratio the function reports about itself. It runs in CI (`npm test`).
+
+`LeftNav`'s `accent` prop documents the same 4.5:1 requirement as a rule the caller must
+follow by hand. It predates this module and is unchanged — but a new prop taking a colour
+should route through `contrast.ts` rather than adding another honour-system rule.
 
 No barrel `index.ts` — import the file directly (`@/app-ui/LeftNav`, `@/app-ui/SaveButton`),
 matching the estate's other shared source-only submodule.

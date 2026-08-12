@@ -1,6 +1,20 @@
 # Changelog
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
+## [2026-08-12] — Readable chips: `contrast.ts` + `Pill`
+
+### Added
+- **`contrast.ts`** — WCAG 2.1 contrast maths (`relativeLuminance`, `contrastRatio`, `parseColor`, `toHex`) plus `accessiblePair(colour)`, which returns a background/foreground pair guaranteed to meet a minimum ratio (AA by default). Pure TypeScript, no React, no dependencies.
+- **`Pill.tsx`** — `Pill` and `PillDot`, a coloured chip whose foreground is derived from its background rather than hard-coded. Server-safe: no hooks, no `'use client'`.
+- **`contrast.test.ts` + `npm test`, wired into CI** — sweeps 4,096 colours across the sRGB cube and fails if any produces a sub-AA pair, independently re-measuring each returned pair instead of trusting the reported ratio.
+- `@types/node` devDependency and `.testbuild/` ignores, for the `node --test` runner (same arrangement as the estate's other shared module).
+
+### Why
+A chip that takes its background from data and writes `text-white` in the markup is readable against the colour it was built with and invisible against the next one someone picks — white on `#ffea00` is 1.23:1. Nothing in a normal pipeline catches it: not `tsc`, not lint, not the build. Deriving the foreground makes the unreadable combination unrepresentable.
+
+Notably, picking the better of black-or-white is **not** enough — pure red fails against both (4.00:1 and 4.44:1), so `accessiblePair` nudges background lightness in HSL, preserving hue and saturation, for the 6% of colours that need it.
+
+
 ## [2026-08-11] — Security hardening: CI persist-credentials (Aikido audit)
 
 ### Fixed

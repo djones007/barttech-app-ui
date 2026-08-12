@@ -26,9 +26,59 @@ So UI gets its own repo, mounted **only where it is used**.
 | File | Exports |
 |------|---------|
 | `LeftNav.tsx` | `LeftNav`, and the types `NavItem`, `NavLinkItem`, `NavChildItem`, `NavGroupItem`, `LeftNavProps` — the left-hand sidebar shell: app header, link/group nav with accordions, off-canvas mobile drawer, and a pinned bottom block (Changelog · Help · signed-in email · Sign out). Client component (`"use client"`). |
+| `contrast.ts` | `accessiblePair`, `readableOn`, `contrastRatio`, `relativeLuminance`, `parseColor`, `toHex`, `AA_NORMAL`, `AA_LARGE` — WCAG 2.1 colour maths. Pure TypeScript, no React. |
+| `Pill.tsx` | `Pill`, `PillDot`, type `PillProps` — a coloured chip whose text colour is derived from its background. No hooks, so it works in a server component. |
 
 There is no barrel `index.ts` — import the file directly (`@/app-ui/LeftNav`), matching
 how the estate's other shared submodule is consumed.
+
+## Coloured chips: `Pill` and `contrast.ts`
+
+Any time a background colour comes from **data** — a per-tenant accent, a category colour,
+anything picked in a settings screen — the text colour on top of it must be **derived, not
+written**. Hard-coding `text-white` produces a chip that is readable against the colour it
+was built with and unreadable against the next one someone chooses: white on `#ffea00` is
+1.23:1, against AA's 4.5:1 floor. No build, type check or linter can see that.
+
+```tsx
+import { Pill, PillDot } from "@/app-ui/Pill";
+
+<Pill color={category.colour}>{category.name}</Pill>
+<PillDot color={category.colour} />
+```
+
+Painting the background yourself? Take just the foreground:
+
+```tsx
+import { readableOn, accessiblePair } from "@/app-ui/contrast";
+
+<span style={{ backgroundColor: c, color: readableOn(c) }}>…</span>
+const { background, foreground, ratio, adjusted } = accessiblePair(c, { minRatio: 7 });
+```
+
+### `Pill` props
+
+| Prop | Type | Default | Notes |
+|------|------|---------|-------|
+| `color` | `string \| null` | — | Any hex (`#abc`, `#aabbcc`) or `rgb()`/`rgba()` string. Alpha is ignored, not approximated. |
+| `children` | `ReactNode` | — | Chip contents. |
+| `className` | `string` | rounded-full chip classes | Replaces the default shape/typography wholesale. |
+| `fallbackColor` | `string` | `#6366f1` | Used when `color` is missing or unparseable. |
+| `minRatio` | `number` | `4.5` (AA) | Raise to `7` for AAA. |
+| `title` / `style` | — | — | Passed through; `style` merges over the computed colours. |
+
+### Two things to know before changing it
+
+**Better-of-black-or-white is not sufficient.** Pure red `#ff0000` scores 4.00:1 against
+white and 4.44:1 against near-black — both fail AA, and the better of the two still fails.
+When no fixed foreground reaches the threshold, `accessiblePair` nudges the background's
+**lightness** in HSL so hue and saturation survive; the chip still reads as red. Sampling the
+sRGB cube every 17 steps (4,096 colours), 254 need that nudge and the rest come back
+untouched — the caller's colour is preserved wherever it legitimately can be.
+
+**The guarantee is asserted.** `npm test` sweeps those 4,096 colours, fails on any sub-AA
+pair, and independently re-measures every returned pair rather than trusting the ratio the
+function reports about itself. It runs in CI.
 
 ## `LeftNav` props
 

@@ -36,3 +36,9 @@ jobs:
       # reported in one run rather than one masking the other.
       - if: always()
         run: npm run typecheck
+      # `contrast.ts` makes a guarantee — that no colour it is handed can produce
+      # a sub-AA pair — and a guarantee is only worth what asserts it. Neither
+      # lint nor tsc can see a contrast ratio, and the bug this module exists to
+      # kill is invisible to a build by definition.
+      - if: always()
+        run: npm test

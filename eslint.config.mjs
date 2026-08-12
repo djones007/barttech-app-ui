@@ -18,7 +18,9 @@ import reactHooks from "eslint-plugin-react-hooks";
 import globals from "globals";
 
 export default tseslint.config(
-  { ignores: ["node_modules/**"] },
+  // `.testbuild/` is the CommonJS output `npm test` compiles for `node --test`.
+  // Linting a build artefact only ever reports on the compiler's choices.
+  { ignores: ["node_modules/**", ".testbuild/**"] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   reactHooks.configs.flat.recommended,

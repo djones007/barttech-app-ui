@@ -6,7 +6,8 @@
   "license": "UNLICENSED",
   "scripts": {
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "tsc --outDir .testbuild --module commonjs --target es2022 --skipLibCheck --moduleResolution node --esModuleInterop --types node contrast.ts contrast.test.ts && node --test \".testbuild/*.test.js\""
   },
   "peerDependencies": {
     "next": ">=15",
@@ -15,6 +16,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.5",
+    "@types/node": "^22.10.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "eslint": "^9.39.5",
