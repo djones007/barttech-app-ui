@@ -1,6 +1,28 @@
 # Changelog
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
+## [2026-08-12c] — `softPair`, and Pill defaults to a soft tone
+
+### Added
+- **`softPair(colour)`** — a pale tint of the colour behind dark, saturated text of the same hue. Guarantees AA like `accessiblePair`, but *aims* for AAA (7:1) rather than stopping at the floor.
+- **`Pill` gains `tone?: "soft" | "solid"`, defaulting to `soft`.** `solid` keeps the old behaviour for the cases where a block of colour is the point.
+
+### Why
+The solid treatment shipped, met AA, and was **still reported as hard to read**. That is the useful part: near-black on saturated red is 4.50:1 and on saturated orange 6.33:1 — both compliant, neither comfortable across a list of ninety chips. **Meeting AA is a floor, not evidence that something is pleasant to read.**
+
+The first attempt at `softPair` repeated the same mistake in new clothing: it stopped darkening at the first shade clearing AA and landed red at 4.58:1. Its own test caught that, which is why the test now asserts a *margin* above the minimum rather than a pass. Measured on the real palette:
+
+| Colour | Solid (black text) | Soft |
+|---|--:|--:|
+| Saturated red `#ff0000` | 4.50 | **7.22** |
+| Saturated orange `#f97316` | 6.33 | **7.09** |
+| Saturated yellow `#ffea00` | 14.38 | 7.44 |
+| Mid green `#008000` | 5.14 | 7.49 |
+| Pure blue `#0000ff` | 8.59 | 7.02 |
+
+Hue is untouched — a red chip is dark red on pale pink, still unmistakably red. `PillDot` is unchanged: a swatch must show the stored colour.
+
+
 ## [2026-08-12b] — Patch js-yaml advisory (dev-only)
 
 ### Fixed

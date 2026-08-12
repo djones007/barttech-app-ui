@@ -99,7 +99,7 @@ lower-level string check and knows nothing about `external`.
 | `DateRangePicker.tsx` | `DateRangePicker`, `presetToRange` + type `DateRange`. |
 | `SaveButton.tsx` | `SaveButton`. Client component. Submit button for a server-action form; shows pending + saved state. Props: `children`, `className`, `savedLabel`, `pendingLabel`, `savedForMs`. |
 | `contrast.ts` | `accessiblePair`, `readableOn`, `contrastRatio`, `relativeLuminance`, `parseColor`, `toHex`, `AA_NORMAL`, `AA_LARGE`. Pure TS, no React — importable from a plain Node script or a test. |
-| `Pill.tsx` | `Pill`, `PillDot` + type `PillProps`. Server-safe (no hooks, no `'use client'`). |
+| `Pill.tsx` | `Pill`, `PillDot` + type `PillProps`. Server-safe (no hooks, no `'use client'`). `Pill` defaults to `tone="soft"` — a pale tint with dark hue-matched text — because the solid version met AA and was *still* reported unreadable. Use `tone="solid"` only where a block of colour is the point. |
 
 ## Never hard-code a foreground over a data-driven background
 
