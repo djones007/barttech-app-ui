@@ -1,6 +1,12 @@
 # Changelog
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
+## [2026-08-12b] — Patch js-yaml advisory (dev-only)
+
+### Fixed
+- `overrides.js-yaml` pinned to `^4.3.1`, clearing a high-severity Dependabot alert (quadratic CPU consumption in `!!omap` resolution). It reached this repo as a **dev-only** transitive of `eslint` → `@eslint/eslintrc`, and this repo is source-only so nothing here is ever shipped or executed in a consumer — but a permanently red alert on the default branch is noise that trains people to ignore the next one.
+
+
 ## [2026-08-12] — Readable chips: `contrast.ts` + `Pill`
 
 ### Added
