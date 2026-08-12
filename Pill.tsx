@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from "react";
-import { accessiblePair, parseColor, toHex } from "./contrast";
+import { accessiblePair, parseColor, softPair, toHex } from "./contrast";
 
 /**
  * A small coloured chip — label, tag, category or status badge — whose
@@ -26,6 +26,16 @@ export interface PillProps {
   fallbackColor?: string;
   /** Minimum contrast ratio to guarantee. Defaults to WCAG AA for normal text. */
   minRatio?: number;
+  /**
+   * `soft` (default) — pale tint of the colour, dark saturated text of the same
+   * hue. `solid` — the colour as the background with a derived foreground.
+   *
+   * Soft is the default because solid was shipped, met AA, and was still
+   * reported as hard to read: near-black on saturated red is 4.50:1 and on
+   * saturated orange 6.33:1. Both pass; neither is comfortable across a long
+   * list. Use `solid` only where the block of colour is the point.
+   */
+  tone?: "soft" | "solid";
   title?: string;
   style?: CSSProperties;
 }
@@ -38,13 +48,15 @@ export function Pill({
   className = DEFAULT_CLASS,
   fallbackColor,
   minRatio,
+  tone = "soft",
   title,
   style,
 }: PillProps) {
-  const { background, foreground } = accessiblePair(color, {
+  const opts = {
     ...(fallbackColor ? { fallback: fallbackColor } : {}),
     ...(minRatio ? { minRatio } : {}),
-  });
+  };
+  const { background, foreground } = tone === "solid" ? accessiblePair(color, opts) : softPair(color, opts);
 
   return (
     <span

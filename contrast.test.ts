@@ -6,6 +6,7 @@ import {
   contrastRatio,
   parseColor,
   readableOn,
+  softPair,
   relativeLuminance,
   toHex,
 } from "./contrast";
@@ -168,4 +169,60 @@ test("NO colour in the sRGB cube can produce a sub-AA pair", () => {
   // rescuing the few colours that need it.
   assert.ok(adjustedCount < 4096 * 0.1, `${adjustedCount}/4096 colours were adjusted — too many`);
   console.log(`  swept 4096 colours, worst pair ${worst.ratio.toFixed(2)}:1 (${worst.colour}), ${adjustedCount} adjusted`);
+});
+
+// ---------------------------------------------------------------------------
+// softPair — added after the user reported, for the SECOND time, that tag pills
+// were hard to read. The first report produced accessiblePair, which made every
+// pair clear AA. The second came after that shipped: near-black on saturated red
+// is 4.50:1 — compliant, and sitting exactly on the floor — and near-black on
+// saturated orange at 6.33:1 is still tiring across a long list.
+//
+// The lesson worth encoding: AA is a floor, not evidence of comfort. These tests
+// therefore assert a MARGIN above the minimum, not merely a pass.
+// ---------------------------------------------------------------------------
+
+test("softPair is comfortably above AA, not sitting on it", () => {
+  for (const c of ["#ff0000", "#f97316", "#ffea00", "#008000", "#0000ff", "#000000", "#6366f1"]) {
+    const p = softPair(c);
+    assert.ok(p.ratio >= 4.5, `${c}: ${p.ratio} is below AA`);
+    // The whole point of the tint: clear the bar with room to spare. Solid-fill
+    // red managed exactly 4.50; anything in that region is what prompted this.
+    assert.ok(p.ratio >= 6, `${c}: ${p.ratio} clears AA but only just — that is the problem this solves`);
+  }
+});
+
+test("softPair keeps the hue — a red chip still reads as red", () => {
+  const red = softPair("#ff0000");
+  const rf = parseColor(red.foreground)!;
+  const rb = parseColor(red.background)!;
+  assert.ok(rf.r > rf.g && rf.r > rf.b, `foreground ${red.foreground} is not red`);
+  assert.ok(rb.r > rb.g && rb.r > rb.b, `background ${red.background} is not a red tint`);
+
+  const orange = softPair("#f97316");
+  const of_ = parseColor(orange.foreground)!;
+  assert.ok(of_.r > of_.g && of_.g > of_.b, `foreground ${orange.foreground} is not orange`);
+});
+
+test("softPair backgrounds are pale — the wash, not the colour", () => {
+  for (const c of ["#ff0000", "#f97316", "#0000ff"]) {
+    const bg = parseColor(softPair(c).background)!;
+    assert.ok(relativeLuminance(bg) > 0.6, `${c}: tint is too dark to read dark text on`);
+  }
+});
+
+test("softPair still guarantees AA across the sRGB cube", () => {
+  let worst = { colour: "", ratio: Infinity };
+  for (let r = 0; r <= 255; r += 51) {
+    for (let g = 0; g <= 255; g += 51) {
+      for (let b = 0; b <= 255; b += 51) {
+        const colour = toHex({ r, g, b });
+        const p = softPair(colour);
+        const measured = contrastRatio(parseColor(p.foreground)!, parseColor(p.background)!);
+        assert.ok(measured >= AA_NORMAL, `${colour} produced ${measured}:1`);
+        if (measured < worst.ratio) worst = { colour, ratio: measured };
+      }
+    }
+  }
+  console.log(`  softPair swept 216 colours, worst ${worst.ratio.toFixed(2)}:1 (${worst.colour})`);
 });

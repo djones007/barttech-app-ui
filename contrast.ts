@@ -247,3 +247,103 @@ export function accessiblePair(
 export function readableOn(color: string | null | undefined, options: AccessiblePairOptions = {}): string {
   return accessiblePair(color, options).foreground;
 }
+
+/** Mix `color` toward white. `weight` is how much of the ORIGINAL colour survives. */
+function tintTowardWhite(rgb: Rgb, weight: number): Rgb {
+  return {
+    r: Math.round(255 - (255 - rgb.r) * weight),
+    g: Math.round(255 - (255 - rgb.g) * weight),
+    b: Math.round(255 - (255 - rgb.b) * weight),
+  };
+}
+
+/**
+ * A SOFT chip: a pale tint of the colour behind a dark, saturated version of the
+ * same colour.
+ *
+ * WHY THIS EXISTS ALONGSIDE `accessiblePair`
+ * `accessiblePair` keeps the caller's colour as the background and finds a
+ * foreground that clears AA. That is correct, and it is still not comfortable to
+ * read: near-black on saturated red scores 4.50:1 — a pass, but a pass sitting
+ * exactly on the floor — and near-black on saturated orange, at 6.33:1, is
+ * legitimately tiring across a list of ninety chips. Reported by the user twice,
+ * the second time after the ratios were already compliant, which is the useful
+ * signal: **meeting AA is a floor, not evidence that something is pleasant to
+ * read.**
+ *
+ * Tinting inverts where the saturation goes. The chip still reads unmistakably
+ * as "red" or "orange" — hue is untouched — but the strong colour moves into the
+ * text, where it aids legibility, and the background becomes a wash. Ratios land
+ * far above the minimum rather than on it.
+ *
+ * The foreground is darkened until it clears `minRatio` against the tint, so the
+ * guarantee is identical to `accessiblePair`'s: an unreadable pair is not
+ * representable as an output.
+ */
+export function softPair(
+  color: string | null | undefined,
+  options: AccessiblePairOptions & { tintWeight?: number; comfortRatio?: number } = {}
+): AccessiblePair {
+  const {
+    minRatio = AA_NORMAL,
+    dark = "#111827",
+    fallback = "#6366f1",
+    // 12% of the colour, 88% white. Enough to name the hue, pale enough to read on.
+    tintWeight = 0.12,
+    // The target, not the floor. AAA for body text — reached for every colour in
+    // the estate palette; a hue that cannot get there falls back to minRatio.
+    comfortRatio = 7,
+  } = options;
+
+  const base = parseColor(color) ?? parseColor(fallback) ?? { r: 99, g: 102, b: 241 };
+  const bg = tintTowardWhite(base, tintWeight);
+
+  // Walk the colour's own lightness down until it is legible on its own tint.
+  // Starting from the colour rather than from black is what keeps the text
+  // recognisably the brand hue instead of a generic dark grey.
+  //
+  // AIM FOR `comfortRatio` (AAA), NOT `minRatio`. Stopping at the first shade
+  // that clears AA reproduces the original complaint in a new form: red settled
+  // at 4.58:1, which is compliant and still unpleasant. The floor is where a
+  // pair becomes permissible, not where it becomes readable — and the caller is
+  // asking for a *soft* chip precisely because the compliant version was not
+  // good enough. Keep darkening past the floor.
+  const hsl = rgbToHsl(base);
+  let acceptable: { rgb: Rgb; ratio: number; steps: number } | null = null;
+
+  for (let i = 0; i <= 100; i++) {
+    const candidate = hslToRgb({ ...hsl, l: Math.max(0, hsl.l - i * 0.01) });
+    const r = contrastRatio(candidate, bg);
+    if (r >= comfortRatio) {
+      return {
+        background: toHex(bg),
+        foreground: toHex(candidate),
+        ratio: Math.round(r * 100) / 100,
+        adjusted: i > 0,
+      };
+    }
+    // Remember the first merely-compliant shade, in case this hue cannot reach
+    // comfort against its own tint before running out of lightness.
+    if (!acceptable && r >= minRatio) acceptable = { rgb: candidate, ratio: r, steps: i };
+    if (hsl.l - i * 0.01 <= 0) break;
+  }
+
+  if (acceptable) {
+    return {
+      background: toHex(bg),
+      foreground: toHex(acceptable.rgb),
+      ratio: Math.round(acceptable.ratio * 100) / 100,
+      adjusted: acceptable.steps > 0,
+    };
+  }
+
+  // A colour so pale that even black-of-its-own-hue cannot clear the bar against
+  // its tint (a near-white input). Fall back to the neutral dark, which always can.
+  const darkRgb = parseColor(dark) ?? { r: 17, g: 24, b: 39 };
+  return {
+    background: toHex(bg),
+    foreground: toHex(darkRgb),
+    ratio: Math.round(contrastRatio(darkRgb, bg) * 100) / 100,
+    adjusted: true,
+  };
+}
