@@ -1,6 +1,12 @@
 # Changelog
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
+## [2026-08-16]
+
+### Changed
+
+- Bumped transitive `nanoid` to 3.3.18 (GHSA high: infinite loop on zero-size custom generator). Lockfile only; reached via postcss, unreachable code path in this app.
+
 ## [2026-08-12c] — `softPair`, and Pill defaults to a soft tone
 
 ### Added
