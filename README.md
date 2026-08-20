@@ -88,7 +88,8 @@ function reports about itself. It runs in CI.
 | `appInitial` | `string` | first char of `appName` | Letter in the logo square. |
 | `navItems` | `NavItem[]` | — | Mix `{ kind: "link" }` and `{ kind: "group" }` entries. Each link (and each group child) takes an optional `exact` and `external` — see below. |
 | `userEmail` | `string` | — | Shown above Sign out. |
-| `onSignOut` | `() => void` | — | Pass a server action. Omit and the row is not rendered. |
+| `onSignOut` | `() => void` | — | Pass a server action. Omit and the row is not rendered. **Prefer `signOutHref`** — see below. |
+| `signOutHref` | `string` | — | Sign-out as a plain `<a href>` GET navigation. Survives deployments, unlike a server action. Takes precedence over `onSignOut`. |
 | `changelogHref` | `string \| null` | `"/changelog"` | `null` hides the row. |
 | `helpHref` | `string \| null` | `"/help"` | `null` hides the row. |
 | `homeHref` | `string` | `"/"` | Where the logo/app-name links. |
@@ -137,6 +138,14 @@ real consumers without any of them having to fork:
   `isActive`, at any new call site handling a nav entry.
 - **`changelogHref: null` / `helpHref: null`** — some consumers' admin areas have no
   `/changelog` or `/help` page, and a pinned nav row that 404s is worse than no row.
+- **`signOutHref` over `onSignOut` — prefer it in new code.** A framework that content-hashes
+  server-action IDs per build gives every deployment a new ID, so a user holding the app open
+  across a deploy clicks Sign out and hits an action the running deployment has never heard of.
+  One consumer shipped that for weeks and it surfaced as a stream of *"Failed to find Server
+  Action"* errors in Sentry — never reproducible locally, because a local session never spans a
+  deployment. `signOutHref` renders a plain `<a href>` to a route handler instead: no ID, nothing
+  to go stale. `onSignOut` is unchanged and still supported (golden rule 4), and remains correct
+  where sign-out must do work a GET should not. When both are passed, `signOutHref` wins.
 
 At least one consumer's admin **was** tab-based, and it is now a consumer like the rest: its
 tabs became real routes, then it mounted this component unchanged.

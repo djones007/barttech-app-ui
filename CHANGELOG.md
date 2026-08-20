@@ -1,6 +1,20 @@
 # Changelog
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
+## [2026-08-20] — `LeftNav` gains `signOutHref`
+
+### Added
+
+- **`LeftNav` prop `signOutHref?: string`** — renders Sign out as a plain `<a href>` GET navigation rather than a button bound to a server action. Takes precedence over `onSignOut` when both are passed.
+
+### Why
+
+A framework that content-hashes server-action IDs per build assigns a new ID on every deployment. A user who had the app open *before* a deploy and then clicks Sign out sends the old ID to the new deployment, which has never heard of it — the request fails with *"Failed to find Server Action"*. One consumer shipped that pattern and it surfaced as recurring Sentry errors on its highest-traffic route.
+
+It is invisible in local development and in review: a local session never spans a deployment, so the bug only exists in the gap between two builds. A plain anchor carries no action ID and therefore has no deployment boundary to fall off.
+
+`onSignOut` is unchanged and still supported — golden rule 4, and it remains the right choice where sign-out must do work a GET should not.
+
 ## [2026-08-16]
 
 ### Changed
