@@ -64,6 +64,13 @@ export type LeftNavProps = {
   userEmail?: string;
   /** Pass a server action. Omit and the sign-out row is not rendered. */
   onSignOut?: () => void;
+  /**
+   * URL for sign-out navigation. Use this instead of `onSignOut` when sign-out
+   * should be a plain GET navigation to a route handler — this survives
+   * Next.js deployments because it carries no server-action content-hash ID.
+   * When both are set, `signOutHref` takes precedence.
+   */
+  signOutHref?: string;
   /** Pinned bottom link. Pass `null` to hide it (an app with no `/changelog` page). */
   changelogHref?: string | null;
   /** Pinned bottom link. Pass `null` to hide it (an app with no `/help` page). */
@@ -376,6 +383,7 @@ export function LeftNav({
   navItems,
   userEmail,
   onSignOut,
+  signOutHref,
   changelogHref = "/changelog",
   helpHref = "/help",
   homeHref = "/",
@@ -539,12 +547,20 @@ export function LeftNav({
             </div>
           )}
 
-          {(userEmail || onSignOut) && (
+          {(userEmail || onSignOut || signOutHref) && (
             <div className="mt-2 border-t border-slate-100 pt-2">
               {userEmail && (
                 <p className="truncate px-3 pb-1.5 text-xs text-slate-400">{userEmail}</p>
               )}
-              {onSignOut && (
+              {signOutHref ? (
+                <a
+                  href={signOutHref}
+                  className="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100"
+                >
+                  <IconLogOut className="h-4 w-4 shrink-0" />
+                  <span>Sign out</span>
+                </a>
+              ) : onSignOut ? (
                 <button
                   type="button"
                   onClick={onSignOut}
@@ -553,7 +569,7 @@ export function LeftNav({
                   <IconLogOut className="h-4 w-4 shrink-0" />
                   <span>Sign out</span>
                 </button>
-              )}
+              ) : null}
             </div>
           )}
         </div>
