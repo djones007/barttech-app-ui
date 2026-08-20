@@ -1,6 +1,28 @@
 # Changelog
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
+## [2026-08-20b] — Consumers must exclude this mount from `tsconfig`, not just from lint
+
+### Changed
+
+Onboarding step 3b added: a consumer excludes `src/app-ui` from its `tsconfig.json` `exclude` array,
+alongside the `src/web-core` already there. The old step 3 covered **lint only**, and that omission
+propagated — checked across the estate on 2026-08-20, all 11 consumers excluded `src/web-core` and
+**none** excluded `src/app-ui`. All 11 fixed the same day.
+
+### Why
+
+`contrast.test.ts` imports `node:test`, and a consumer's `include: ["**/*.ts"]` pulls it into that
+app's type-check. Confirmed with `tsc --listFiles`: it appeared in the root file set of an app with
+no relationship to it, and passed only because a Next app already ships `@types/node`. Drop that
+dependency, or add a test file here needing something a consumer lacks, and eleven unrelated builds
+break on a file none of them own — the failure mode this repo's own `CLAUDE.md` documents as the
+reason UI is a separate submodule from the framework-free core.
+
+Excluding is safe because `exclude` only trims the *root* set — imported files are still checked.
+Measured before/after: `contrast.test.ts` and `contrast.ts` dropped out, while `LeftNav.tsx`,
+`DataTable.tsx`, `BulkActions.tsx` and `DateRangePicker.tsx` stayed. Real boundary errors still fail.
+
 ## [2026-08-20] — `LeftNav` gains `signOutHref`
 
 ### Added
