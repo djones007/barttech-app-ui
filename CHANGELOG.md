@@ -1,6 +1,23 @@
 # Changelog
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
+
+## [2026-09-01] — Next.js 16.3.3: patches critical AVIF heap overflow (GHSA-2xp9-vwfh-vxw4)
+
+### Security
+- **`next` upgraded 16.2.11 → 16.3.3**, closing `GHSA-2xp9-vwfh-vxw4` (critical). The Image
+  Optimization API decodes AVIF input through `sharp`, which depends on `libheif`; a crafted AVIF
+  triggers a heap buffer overflow during decode/scale, giving unauthenticated DoS or remote code
+  execution in the Next.js process.
+
+  Exposure here is indirect: `next` is a devDependency of this library — build and test toolchain
+  only — and nothing in this package serves images. Patched so consumers installing from this
+  lockfile do not inherit the vulnerable tree.
+
+  The devDependency is now pinned exactly (`"16.3.3"`, was `"^16.2.11"`). The `>=15` peer range is
+  unchanged, so consumers are not constrained. The lockfile diff is the Next family plus its
+  `@swc/helpers` transitive only.
+
 ## [2026-08-20b] — Consumers must exclude this mount from `tsconfig`, not just from lint
 
 ### Changed
