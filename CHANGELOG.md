@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-09-02] — Next.js 16.3.3 → 16.3.4
+
+### Changed
+- **`next` `16.3.3` → `16.3.4`** (patch). Routine currency, **not** a security fix: no published advisory affects `16.3.3` — every Next.js entry in the GitHub advisory database is patched at `16.2.11` or earlier, and `npm audit` reports no `next` vulnerability at either version.
+- Verified with a full local `npm run build` before rollout.
+
 ## [2026-09-01] — Next.js 16.3.3: patches critical AVIF heap overflow (GHSA-2xp9-vwfh-vxw4)
 
 ### Security
