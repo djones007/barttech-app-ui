@@ -2,6 +2,23 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-09-07] — LeftNav: longest matching href is the only active row
+
+### Fixed
+- **Two rows lit for one page.** On `/campaigns/settings` the Campaigns row (`/campaigns`) and
+  the Campaign Settings row were both active, because each row ran its own descendant match.
+  Consumers had patched the same fault per row with `exact: true` (six rows in the Command
+  Centre: Quotes, Stock cost, Checkout Admin, All platforms, Time & Cost Saved, Settings) and
+  every new parent/child pair shipped with it again. `exact` could not fix Campaigns at all —
+  it has to stay lit on `/campaigns/<id>`, which is not a row, while yielding to
+  `/campaigns/settings`, which is.
+
+### Changed
+- `resolveActiveHref()` runs once per route change over every row and returns the longest
+  matching href; rows, group highlighting/auto-expansion and the pinned Changelog/Help all
+  compare against it. `exact` is still honoured but nothing new should need it. `NavGroupRow`
+  now takes `activeHref` instead of `pathname` (internal; not exported).
+
 ## [2026-09-02] — Next.js 16.3.3 → 16.3.4
 
 ### Changed

@@ -118,11 +118,15 @@ real consumers without any of them having to fork:
   light shell until a real themed variant is designed.
 - **`footer`** — a slot for an environment badge / tenant switcher / version string,
   rather than growing a prop per app.
-- **`exact` on a nav entry** — the active check matches whole path *segments*, so a row is
-  active on its descendants too (an orders route keeps its row lit on any sub-page under
-  it). That breaks down for a row that is an ancestor of the whole rest of the nav: a
-  Dashboard row pointing at an admin root would, without `exact: true`, render active on
-  every other admin page. `/` is always treated as exact for the same reason.
+- **Active row: longest match wins.** The active check matches whole path *segments*, so a
+  row is active on its descendants too (an orders route keeps its row lit on any sub-page
+  under it). Of every row that matches the current path, only the one with the **longest
+  href** is lit — so `/campaigns` stays active on `/campaigns/<id>` (not a row) and yields to
+  `/campaigns/settings` (a row) without any flag. Before 2026-09-07 each row decided its own
+  state and a parent/child pair lit both rows; that was patched six times with `exact: true`
+  and recurred with every new pair. `/` is always exact, since every path descends from it.
+- **`exact` on a nav entry** — still honoured: turns off descendant matching for that row.
+  Nothing new should need it now that the longest match wins.
 - **`external` on a nav entry** — the row points at a *different application*, not a route
   in this one. Without it, such rows rendered through `next/link` as same-tab
   navigations that dumped the user out of the app with no way back, and no indication before

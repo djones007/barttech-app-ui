@@ -94,6 +94,17 @@ structurally always false, and the same comparison feeds `hasActiveChild` (which
 group highlighting and auto-expansion). **Any new call site handling a nav entry must use
 `isRowActive(pathname, item)`, not `isActive(pathname, href, exact)`** — `isActive` is the
 lower-level string check and knows nothing about `external`.
+
+**No row decides its own active state.** `resolveActiveHref()` runs once per route change
+over every row (links, group children, the pinned Changelog/Help) and returns the ONE href
+that is the current page: the longest of those that match. Every row then compares
+`row.href === activeHref`. Reason: `isActive` is a descendant match, so on
+`/campaigns/settings` both the `/campaigns` row and the `/campaigns/settings` row matched
+and both lit. Consumers patched that per row with `exact: true` — six times in the Command
+Centre alone — and every new parent/child pair shipped with the same bug until someone
+noticed. `exact` could not even fix the Campaigns case: the row must stay lit on
+`/campaigns/<id>` (not a row) while yielding to `/campaigns/settings` (a row). Longest match
+does both. Do not reintroduce a per-row `isRowActive` call for highlighting.
 | `BulkActions.tsx` | `useBulkSelection`, `BulkActionBar`, `BulkCheckbox` + types `BulkAction`, `BulkSelection`. Client component. |
 | `DataTable.tsx` | `DataTable` + types `Column`, `DataTableProps`, and the `IconEdit`/`IconArchive`/`IconTrash` SVGs. Client component. |
 | `DateRangePicker.tsx` | `DateRangePicker`, `presetToRange` + type `DateRange`. |

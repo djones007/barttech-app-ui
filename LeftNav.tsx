@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 // --- Types ---
 
@@ -158,6 +158,39 @@ function isRowActive(
   return isActive(pathname, item.href, item.exact);
 }
 
+/**
+ * The ONE href that is the current page: of every row that `isRowActive`,
+ * the one with the longest href wins. Rows are active when `row.href ===
+ * activeHref`, never by calling `isRowActive` on their own.
+ *
+ * Why: `isActive` is a descendant match, so `/campaigns` is active on
+ * `/campaigns/settings` — and so is the Campaign Settings row. Two rows lit
+ * for one page. That was patched row by row with `exact: true` (Quotes, Stock
+ * cost, Checkout Admin, All platforms, Time & Cost Saved, Settings — six
+ * times), and each new parent/child pair in the nav shipped with the same
+ * bug until someone noticed. `exact` also cannot fix Campaigns: it must stay
+ * active on `/campaigns/<id>` (which is not a row) while yielding to
+ * `/campaigns/settings` (which is). Longest match does both without a flag.
+ * `exact` is still honoured where set, but nothing new should need it.
+ */
+function resolveActiveHref(
+  pathname: string,
+  navItems: NavItem[],
+  extraHrefs: (string | null | undefined)[],
+): string | null {
+  let best: string | null = null;
+  const consider = (row: { href: string; exact?: boolean; external?: boolean }) => {
+    if (!isRowActive(pathname, row)) return;
+    if (best === null || row.href.length > best.length) best = row.href;
+  };
+  for (const item of navItems) {
+    if (item.kind === "link") consider(item);
+    else for (const child of item.children) consider(child);
+  }
+  for (const href of extraHrefs) if (href) consider({ href });
+  return best;
+}
+
 // --- Inline SVGs (no lucide dependency; pass lucide icons in via the icon prop) ---
 
 function IconMenu({ className }: { className?: string }) {
@@ -297,20 +330,20 @@ function NavLinkRow({
 
 function NavGroupRow({
   item,
-  pathname,
+  activeHref,
   open,
   onToggle,
   onNavigate,
   accent,
 }: {
   item: NavGroupItem;
-  pathname: string;
+  activeHref: string | null;
   open: boolean;
   onToggle: () => void;
   onNavigate: () => void;
   accent: string;
 }) {
-  const hasActiveChild = item.children.some((c) => isRowActive(pathname, c));
+  const hasActiveChild = item.children.some((c) => c.href === activeHref);
   const Icon = item.icon;
 
   return (
@@ -344,7 +377,7 @@ function NavGroupRow({
               icon={child.icon}
               nested
               external={child.external}
-              active={isRowActive(pathname, child)}
+              active={child.href === activeHref}
               onNavigate={onNavigate}
               accent={accent}
             />
@@ -396,6 +429,13 @@ export function LeftNav({
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  // Resolved once per route change; every row compares against it. See
+  // resolveActiveHref for why no row decides its own active state.
+  const activeHref = useMemo(
+    () => resolveActiveHref(pathname, navItems, [changelogHref, helpHref]),
+    [pathname, navItems, changelogHref, helpHref],
+  );
+
   /**
    * A group is open if you have explicitly toggled it; otherwise it follows the
    * current route, so the section you are in is always expanded — including after
@@ -405,7 +445,7 @@ export function LeftNav({
   const [overrides, setOverrides] = useState<Record<string, boolean>>({});
 
   const openFor = (g: NavGroupItem, ov: Record<string, boolean>) =>
-    ov[g.label] ?? g.children.some((c) => isRowActive(pathname, c));
+    ov[g.label] ?? g.children.some((c) => c.href === activeHref);
 
   const groupOpen = (g: NavGroupItem) => openFor(g, overrides);
 
@@ -500,7 +540,7 @@ export function LeftNav({
                 label={item.label}
                 icon={item.icon}
                 external={item.external}
-                active={isRowActive(pathname, item)}
+                active={item.href === activeHref}
                 onNavigate={closeMobile}
                 accent={accent}
               />
@@ -508,7 +548,7 @@ export function LeftNav({
               <NavGroupRow
                 key={item.label}
                 item={item}
-                pathname={pathname}
+                activeHref={activeHref}
                 open={groupOpen(item)}
                 onToggle={() => toggleGroup(item)}
                 onNavigate={closeMobile}
@@ -529,7 +569,7 @@ export function LeftNav({
                   href={changelogHref}
                   label="Changelog"
                   icon={IconChangelog}
-                  active={isActive(pathname, changelogHref)}
+                  active={changelogHref === activeHref}
                   onNavigate={closeMobile}
                   accent={accent}
                 />
@@ -539,7 +579,7 @@ export function LeftNav({
                   href={helpHref}
                   label="Help"
                   icon={IconHelp}
-                  active={isActive(pathname, helpHref)}
+                  active={helpHref === activeHref}
                   onNavigate={closeMobile}
                   accent={accent}
                 />
