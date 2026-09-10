@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-09-10] — sharp 0.35.4: the security override was holding the fix back
+
+### Fixed
+- **`sharp` 0.35.3 → 0.35.4** (libheif 1.23.2), clearing `CVE-2026-84383` / `GHSA-rgj7-g3m4-5g8c` — a heap-based buffer overflow in the bundled libheif that can reach DoS or RCE on glibc-based Linux when decoding untrusted AVIF. Next.js's image optimiser is the reachable path.
+- **`overrides.sharp` raised `>=0.35.0` → `>=0.35.4`. This is the actual fix.** `next@16.3.4` already asks for `^0.35.4`, so the upgrade should have arrived on its own install. The override — added 2026-07-22 as the floor for the *previous* sharp CVE (`GHSA-f88m-g3jw-g9cj`) — widened that requirement back down to `>=0.35.0`, and npm has no reason to move a resolution that already satisfies the range. Patching only the lockfile would have left the same trap armed for the next sharp advisory, so the floor moves with the fix.
+- **`js-yaml` 4.3.1 → 4.3.2** — `maxTotalMergeKeys` does not limit CPU use for empty merge sources (DoS). Dev-only, pulled in by `@eslint/eslintrc` at lint time; it is never shipped.
+
+### Notes
+- **Aikido reported this in 7 repositories; a lockfile sweep of the working tree found 21.** The free plan watches 10, so the dashboard systematically understates estate exposure — for any dependency CVE the real count comes from the lockfiles, not the dashboard.
+- Lockfile change is dependency-only: `sharp`, its per-platform `@img/*` binaries, `@img/sharp-libvips-*` 1.3.2 → 1.3.3, `@emnapi/runtime`, and `js-yaml`. Nothing else re-resolved.
+- `npm audit` is clean in this repo after the change.
+
 ## [2026-09-07] — LeftNav: longest matching href is the only active row
 
 ### Fixed
