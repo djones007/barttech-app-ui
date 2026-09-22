@@ -2,7 +2,22 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
-## [2026-09-10] — sharp 0.35.4: the security override was holding the fix back
+## [2026-09-22] — CI now fetches and runs the shared third-party-font gate
+
+### Added
+- **`.github/workflows/ci.yml`** — new step "No third-party font CDN loaded at runtime": fetches
+  `check-third-party-fonts.mjs` from the public `barttech-web-core` repo (pinned by commit SHA via
+  a new `WEB_CORE_REF` env var, same pattern used by every other consumer of that repo's shared
+  gate scripts) and runs it against this repo's tree. Passes clean: 8 files checked, 0 findings.
+
+### Why
+- This repo is consumed as a vendored submodule by every app with an admin/dashboard shell. The
+  gate script deliberately skips a consumer's own vendored-submodule mount paths when that
+  consumer runs it, on the assumption each of those repos gates itself against its own tree in
+  its own CI. This repo had CI, but never actually fetched or ran this gate — so the assumption
+  was false here, and a third-party font load added to a shared component would have shipped,
+  unseen, to every consumer that mounts this repo. Purely preventative: the tree was already
+  clean before this change.
 
 ### Fixed
 - **`sharp` 0.35.3 → 0.35.4** (libheif 1.23.2), clearing `CVE-2026-84383` / `GHSA-rgj7-g3m4-5g8c` — a heap-based buffer overflow in the bundled libheif that can reach DoS or RCE on glibc-based Linux when decoding untrusted AVIF. Next.js's image optimiser is the reachable path.

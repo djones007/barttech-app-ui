@@ -19,6 +19,20 @@ on:
       - "**.md"
   pull_request:
 
+# This step fetches its gate script from the PUBLIC barttech-web-core repo and
+# runs it with node, so whatever that URL returns executes here with access to
+# everything in this job. Pinned to a reviewed commit rather than tracking
+# main: unpinned, a compromise or a force-push of that one repo would run
+# attacker code in every consumer's CI at once, and the blast radius is every
+# secret this workflow can see.
+#
+# The cost is that a script fix no longer reaches this repo on its own —
+# bump this SHA to adopt one. That is the trade the integrity buys, and it is
+# the right way round: automatic propagation of executable code IS the
+# vulnerability.
+env:
+  WEB_CORE_REF: 10a433b4a4d53a58f9fd14cb38c4b479cd9c0a5b
+
 jobs:
   checks:
     runs-on: ubuntu-latest
@@ -42,3 +56,20 @@ jobs:
       # kill is invisible to a build by definition.
       - if: always()
         run: npm test
+      # This repo is vendored read-only into every consumer with an
+      # admin/dashboard shell, and the shared gate script skips exactly this
+      # directory name when a consumer runs it against its own tree — on the
+      # stated assumption that a repo mounted as a vendored submodule gates
+      # itself. That assumption was unchecked here until now: this repo had
+      # CI, but never actually fetched this gate, so a third-party font load
+      # added to a shared component would have shipped, unseen, to every
+      # consumer that mounts it. Same rule as everywhere else this gate runs:
+      # self-host fonts via next/font or a local file; no runtime request to
+      # a third-party font CDN.
+      - name: No third-party font CDN loaded at runtime
+        if: always()
+        run: |
+          # >>> third-party-font gate (fetched from barttech-web-core) >>>
+          curl -fsSL --retry 3 --retry-delay 2 --retry-all-errors https://raw.githubusercontent.com/djones007/barttech-web-core/${WEB_CORE_REF}/scripts/check-third-party-fonts.mjs -o /tmp/check-third-party-fonts.mjs
+          node /tmp/check-third-party-fonts.mjs
+          # <<< third-party-font gate <<<

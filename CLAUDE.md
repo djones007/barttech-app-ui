@@ -226,15 +226,22 @@ failure here that a green `tsc`, a green lint and a green build all miss.
 
 ## Its own CI
 
-`npm ci` → `npm run lint` → `npm run typecheck` (the second with `if: always()`, so a lint
-failure never hides a type error). Same rationale as the estate's other shared submodule: a
-shared module linted only as a side effect of being vendored into many repos means one
-error here reddens every build at once, against files none of them may edit — a fix in a
-consumer's copy is discarded on the next pointer bump. The gate belongs where the source
-lives.
+`npm ci` → `npm run lint` → `npm run typecheck` → `npm test` (each after the first with
+`if: always()`, so one failure never hides another). Same rationale as the estate's other
+shared submodule: a shared module linted only as a side effect of being vendored into many
+repos means one error here reddens every build at once, against files none of them may
+edit — a fix in a consumer's copy is discarded on the next pointer bump. The gate belongs
+where the source lives.
 
-**Never add the estate's shared-modules CI gate to this repo.** It is the canonical source,
-not a consumer.
+CI also fetches and runs `check-third-party-fonts.mjs` from `barttech-web-core` (pinned via
+`WEB_CORE_REF`, same pattern as every other consumer) against this repo's own tree — added
+2026-09-22 after finding this repo was named in that script's consumer-skip list but had
+never actually run the gate on itself. Bump `WEB_CORE_REF` to adopt a script fix.
+
+**Never add the estate's shared-modules CI gate (the `shared-modules.json` declaration
+check) to this repo.** It is the canonical source, not a consumer. The third-party-font
+gate above is a different thing — a tree-content check, not a module-registry check — and
+belongs here for the same reason it belongs in every repo that has files to check.
 
 ## Keeping This Skill Current
 
