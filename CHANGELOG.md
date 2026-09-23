@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-09-23] — Next.js 16.3.6 (CVE-2026-94545, `next/og` RCE)
+
+### Fixed
+- **Next.js `16.3.4` → `16.3.6`** — patches `CVE-2026-94545` /
+  `AIKIDO-2026-599658` (critical). The Node.js `ImageResponse` implementation in `next/og` renders JSX
+  through Satori into SVG and then to PNG, and Satori does not properly escape attacker-controlled
+  values landing in SVG content, attributes or styles — they can be interpreted as SVG markup, and
+  once they flow into the Node rasterization dependencies this becomes remote code execution in the
+  Next.js process. The Edge `ImageResponse` path is not affected.
+  This repo does not use `next/og` at all, so this was not
+  reachable here — patched anyway, estate-wide across all 22 Next-shipping repos, so the first OG
+  route that does take request input is not a live RCE. Lockfile changes are confined to `next`,
+  `@next/env` and the eight `@next/swc-*` platform binaries.
+
 ## [2026-09-22] — CI now fetches and runs the shared third-party-font gate
 
 ### Added
