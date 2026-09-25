@@ -2,6 +2,31 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-09-25] — web-core CI pin bumped to `5920ab4`
+
+### Changed
+- **`@barttech/web-core` CI pin bumped to `5920ab4`** (from `10a433b`) by `tools/web-core-propagate.sh`.
+
+Upstream commits in this bump:
+
+- `5920ab4` — CHANGELOG: relabel landing-gate entry 2026-09-25d (collided with concurrent c)
+- `1898138` — pageEvents: lead_submit from a form's fetch() is no longer dropped by the page-visit bot gate
+- `9cd7964` — Add gate: landing routes must record a server-side page event in after()
+- `34209c0` — Add experiments module: server-side cookie-free split testing; pageEvents carries the variant
+- `ac9bc81` — Add clientEvents (GA4+Meta eventID dedupe), PostHog no-record paths, legal-placeholder and icon-RGBA prebuild gates
+- `74d4662` — sentryNoise: drop Safari extension runtime.sendMessage rejections
+- `0ca7971` — Add motion module: shared scroll reveal, stagger, count-up, parallax
+- `0620c91` — Font gate: read the baseline through readWithinRoot
+- `6be5ec7` — Document check-migration-prefixes.mjs in scripts/CLAUDE.md
+- `5bb1050` — Add gate: flag duplicate migration filename prefixes
+- `97bf8ff` — Font gate: SKIP_PATH entries must be verified to self-gate, not assumed
+- `5b4d6a8` — Run third-party-font gate against this repo's own tree in CI
+
+`WEB_CORE_REF` is the commit CI fetches its shared gate scripts from and runs with `node`. Bumping it is what makes a gate-script fix take effect here — pinning is why that no longer happens on its own, and adopting a change deliberately is the point.
+
+
+A propagation push is a production deploy, so it gets an entry like any other. Review the upstream commits above for anything behaviour-affecting in this repo.
+
 ## [2026-09-23] — Next.js 16.3.6 (CVE-2026-94545, `next/og` RCE)
 
 ### Fixed

@@ -31,7 +31,7 @@ on:
 # the right way round: automatic propagation of executable code IS the
 # vulnerability.
 env:
-  WEB_CORE_REF: 10a433b4a4d53a58f9fd14cb38c4b479cd9c0a5b
+  WEB_CORE_REF: 5920ab4c7d2677b30423352ce3f33eee16814b20
 
 jobs:
   checks:
