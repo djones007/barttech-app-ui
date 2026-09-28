@@ -2,6 +2,34 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-09-28] — web-core CI pin bumped to `a26ef0f`
+
+### Changed
+- **`@barttech/web-core` CI pin bumped to `a26ef0f`** (from `5920ab4`) by `tools/web-core-propagate.sh`.
+
+Upstream commits in this bump:
+
+- `a26ef0f` — emailit: htmlToText strips the hidden preheader span/div
+- `e570a8b` — Add check-selfrequested-suppression.mjs gate
+- `fdd53f7` — pageEvents: give the form identifier its own `form` field, not the `game` slot
+- `24b6b44` — emailit: sendEmailitEmail returns the provider message id on success; EmailitSendMessage gains headers
+- `47d68b3` — Add consent accept-rate + form-stage event contracts (consentEvents.ts, formEvents.ts)
+- `9808012` — pageEvents: add landing_owner, the owner-exclusion marker for a split test
+- `758a8d8` — problemReport: the generic half of an in-app 'Report a problem' (text cleaning, browser family, snapshot fit, allow-listed client context) + tests
+- `073686e` — experiments: share the whole split-testing flow (page assignment, price-test resolver, buy-click handler)
+- `f663087` — docs: point experiments.ts at the estate split-testing hub
+- `792d988` — experiments: sticky assignment across visits (assignSticky/stickyBucket) and per-variant checkoutUrl
+- `e64aadd` — Public hygiene: describe the affected consumer by role, not by name
+- `2ec58d7` — Fix false positive: "check your email address" validation copy is not a notice
+- `917513b` — Gate: a screen that triggers an email must render the post-submit notice
+- `4c49a35` — emailit: clear a soft-fail suppression before a self-requested send; add ccNotify module
+- `a784c40` — Landing gate: wrapper: manifest lines for pages that call a shared measurement helper
+
+`WEB_CORE_REF` is the commit CI fetches its shared gate scripts from and runs with `node`. Bumping it is what makes a gate-script fix take effect here — pinning is why that no longer happens on its own, and adopting a change deliberately is the point.
+
+
+A propagation push is a production deploy, so it gets an entry like any other. Review the upstream commits above for anything behaviour-affecting in this repo.
+
 ## [2026-09-25] — web-core CI pin bumped to `5920ab4`
 
 ### Changed
