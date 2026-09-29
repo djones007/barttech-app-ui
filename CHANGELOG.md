@@ -2,6 +2,21 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-09-29] — web-core CI pin bumped to `9de5103`
+
+### Changed
+- **`@barttech/web-core` CI pin bumped to `9de5103`** (from `a26ef0f`) by `tools/web-core-propagate.sh`.
+
+Upstream commits in this bump:
+
+- `9de5103` — graph: sendMail saves to Sent Items only for mail to someone else
+- `6cd780a` — emailit: strip Emailit's broken sort param from suppression pagination
+
+`WEB_CORE_REF` is the commit CI fetches its shared gate scripts from and runs with `node`. Bumping it is what makes a gate-script fix take effect here — pinning is why that no longer happens on its own, and adopting a change deliberately is the point.
+
+
+A propagation push is a production deploy, so it gets an entry like any other. Review the upstream commits above for anything behaviour-affecting in this repo.
+
 ## [2026-09-28] — web-core CI pin bumped to `a26ef0f`
 
 ### Changed
