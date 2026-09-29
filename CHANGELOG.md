@@ -2,6 +2,23 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-09-29] — web-core CI pin bumped to `e30fd39`
+
+### Changed
+- **`@barttech/web-core` CI pin bumped to `e30fd39`** (from `9de5103`) by `tools/web-core-propagate.sh`.
+
+Upstream commits in this bump:
+
+- `e30fd39` — bartmailOptin: typed BartmailPartialOptinError + onPartialFailure for post-save failures
+- `8234944` — bartmailOptin: throw on a failed tag write or suppression lift (estate webhook audit)
+- `16ecca0` — safeHtmlNoDom: media element sources restricted to http(s) (security issue #5 triage)
+- `5c54e08` — Security review CI: structured outputs instead of forced tool_choice; Sonnet 5.5
+
+`WEB_CORE_REF` is the commit CI fetches its shared gate scripts from and runs with `node`. Bumping it is what makes a gate-script fix take effect here — pinning is why that no longer happens on its own, and adopting a change deliberately is the point.
+
+
+A propagation push is a production deploy, so it gets an entry like any other. Review the upstream commits above for anything behaviour-affecting in this repo.
+
 ## [2026-09-29] — web-core CI pin bumped to `9de5103`
 
 ### Changed
