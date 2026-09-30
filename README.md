@@ -163,6 +163,28 @@ directly (`icon: LayoutDashboard`). **This repo has no `lucide-react` dependency
 not gain one**: the six pieces of built-in chrome (hamburger, close, chevron, changelog,
 help, sign-out) are inline SVGs, so a consumer with a different icon set pays nothing.
 
+## `BugReportButton`
+
+The staff "Report a bug" icon. Mount it once in the signed-in layout:
+
+```tsx
+import { toBlob } from "html-to-image";
+import * as Sentry from "@sentry/nextjs";
+import { BugReportButton } from "@/app-ui/BugReportButton";
+
+<BugReportButton endpoint="/api/bug-report" capture={toBlob} getSentryEventId={() => Sentry.lastEventId()} />
+```
+
+| Prop | Type | Default | Notes |
+|------|------|---------|-------|
+| `endpoint` | `string` | — | The app's own POST route. It must check the session, then clean and forward with the shared core module's `bugReport.ts`. |
+| `capture` | `BugCaptureFn` | none | html-to-image's `toBlob` (the consumer installs it). Without it there is no automatic picture. |
+| `getSentryEventId` | `() => string \| null \| undefined` | none | Attaches the last Sentry event id. |
+| `className` | `string` | `fixed right-3 top-14 z-30 md:right-6 md:top-16` | Positioning; the default sits under a top-right bell. |
+| `label` | `string` | `Report a bug` | Tooltip, aria-label and form title. |
+
+Posts `multipart/form-data`: `report` (JSON), optional `page` (WebP of the visible page) and up to two `upload` files, all downscaled to WebP in the browser so the body stays under the serverless 4.5 MB cap. The route answers `{ ok: true, id?, href? }`; `href` is shown as "View the issue". Its own UI carries `data-bug-report-ui` so it is never in the picture or the click trail.
+
 ## Local dev
 
 ```bash

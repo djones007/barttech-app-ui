@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-09-30] — BugReportButton: the staff "Report a bug" icon
+
+### Added
+- **`BugReportButton`** (`BugReportButton.tsx`, client component). A bug icon with a "Report a bug" tooltip. On click it freezes a picture of the visible page (through the `capture` prop — pass html-to-image's `toBlob`; no dependency is added here), the URL, route, viewport, the last 25 clicks/navigations (labels only, never input values) and recent uncaught errors, then asks what went wrong. Posts multipart to the app's own `endpoint`, which cleans and forwards it with the shared core module's `bugReport.ts`. Mount it for signed-in staff only.
+
 ## [2026-09-29] — web-core CI pin bumped to `e30fd39`
 
 ### Changed

@@ -110,6 +110,7 @@ does both. Do not reintroduce a per-row `isRowActive` call for highlighting.
 | `DateRangePicker.tsx` | `DateRangePicker`, `presetToRange` + type `DateRange`. |
 | `SaveButton.tsx` | `SaveButton`. Client component. Submit button for a server-action form; shows pending + saved state. Props: `children`, `className`, `savedLabel`, `pendingLabel`, `savedForMs`. |
 | `contrast.ts` | `accessiblePair`, `readableOn`, `contrastRatio`, `relativeLuminance`, `parseColor`, `toHex`, `AA_NORMAL`, `AA_LARGE`. Pure TS, no React — importable from a plain Node script or a test. |
+| `BugReportButton.tsx` | `BugReportButton` + types `BugCaptureFn`, `BugCaptureOptions`. Client component. The estate-standard staff "Report a bug" icon: captures the page picture (via the `capture` prop, e.g. html-to-image `toBlob`), URL, click/navigation trail and recent errors, and posts them to the app's own `endpoint`. Props documented in `README.md`. Mount for signed-in staff only. |
 | `Pill.tsx` | `Pill`, `PillDot` + type `PillProps`. Server-safe (no hooks, no `'use client'`). `Pill` defaults to `tone="soft"` — a pale tint with dark hue-matched text — because the solid version met AA and was *still* reported unreadable. Use `tone="solid"` only where a block of colour is the point. |
 
 ## Never hard-code a foreground over a data-driven background
