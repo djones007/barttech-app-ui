@@ -27,6 +27,7 @@ So UI gets its own repo, mounted **only where it is used**.
 |------|---------|
 | `LeftNav.tsx` | `LeftNav`, and the types `NavItem`, `NavLinkItem`, `NavChildItem`, `NavGroupItem`, `LeftNavProps` — the left-hand sidebar shell: app header, link/group nav with accordions, off-canvas mobile drawer, and a pinned bottom block (Changelog · Help · signed-in email · Sign out). Client component (`"use client"`). |
 | `contrast.ts` | `accessiblePair`, `readableOn`, `contrastRatio`, `relativeLuminance`, `parseColor`, `toHex`, `AA_NORMAL`, `AA_LARGE` — WCAG 2.1 colour maths. Pure TypeScript, no React. |
+| `SwipeRow.tsx` | `SwipeRow`, `SwipeHoverActions`, `useSwipeOpen`, `SWIPE_ACTION_WIDTH` + types `SwipeAction`, `SwipeSide`, `SwipeTone`. Swipe-to-reveal row actions for phone lists. |
 | `Pill.tsx` | `Pill`, `PillDot`, type `PillProps` — a coloured chip whose text colour is derived from its background. No hooks, so it works in a server component. |
 
 There is no barrel `index.ts` — import the file directly (`@/app-ui/LeftNav`), matching
@@ -184,6 +185,51 @@ import { BugReportButton } from "@/app-ui/BugReportButton";
 | `label` | `string` | `Report a bug` | Tooltip, aria-label and form title. |
 
 Posts `multipart/form-data`: `report` (JSON), optional `page` (WebP of the visible page) and up to two `upload` files, all downscaled to WebP in the browser so the body stays under the serverless 4.5 MB cap. The route answers `{ ok: true, id?, href? }`; `href` is shown as "View the issue". Its own UI carries `data-bug-report-ui` so it is never in the picture or the click trail.
+
+## `SwipeRow` — swipe-to-reveal row actions (estate standard for phone lists)
+
+A list row that slides sideways to reveal action buttons: swipe LEFT reveals `rightActions`
+(at the right edge), swipe RIGHT reveals `leftActions` (at the left edge). Presentation only —
+each action's `onAction` is the caller's existing server action. Desktop (mouse) never drags;
+`SwipeHoverActions` shows the same actions as icon buttons on row hover / keyboard focus.
+
+```tsx
+import { SwipeRow, SwipeHoverActions, useSwipeOpen, type SwipeAction } from "@/app-ui/SwipeRow";
+
+const swipe = useSwipeOpen();                       // one row open at a time
+
+const publish: SwipeAction = { key: "publish", label: "Publish", icon: <Send className="h-5 w-5" />, tone: "approve",
+  confirm: `Publish ${name} (${amount})?`, onAction: () => publishItem(id) };
+const remove: SwipeAction = { key: "delete", label: "Delete", icon: <Trash2 className="h-5 w-5" />, tone: "danger",
+  confirm: `Delete ${name}?`, onAction: () => deleteItem(id) };
+
+<div className="group/row">                         {/* needed by SwipeHoverActions */}
+  <SwipeRow openSide={swipe.sideOf(id)} onOpenSide={swipe.setFor(id)}
+            leftActions={[publish]} rightActions={[publish, remove]}>
+    <div className="flex items-center gap-2 px-4">
+      <button className="min-h-[72px] flex-1 text-left" onClick={open}>...</button>
+      <SwipeHoverActions actions={[publish, remove]} onBeforeAction={swipe.closeAll} />
+    </div>
+  </SwipeRow>
+</div>
+```
+
+| Prop (`SwipeRow`) | Type | Default | Notes |
+|------|------|---------|-------|
+| `children` | `ReactNode` | — | The row content. Its background is `contentClassName` (must be opaque). |
+| `rightActions` | `SwipeAction[]` | none | Revealed by swiping LEFT. Left to right. Usual place for the full set. |
+| `leftActions` | `SwipeAction[]` | none | Revealed by swiping RIGHT. One positive shortcut (approve/publish) only. |
+| `openSide` / `onOpenSide` | `"left" \| "right" \| null` / setter | — | Owned by the parent — use `useSwipeOpen()` so only one row is open. |
+| `actionWidth` | `number` | `76` | Px per button; clamped to a 44 minimum. |
+| `contentClassName` | `string` | `bg-card` | Sliding layer background. |
+
+`SwipeAction`: `key`, `label` (visible and accessible name), `icon?` (an element; no icon library
+ships here), `tone` (`approve` green, `reject` amber, `danger` red, `restore` slate, `neutral`),
+`confirm?` (text for `window.confirm`; the action does not run unless accepted) and `onAction`.
+Choosing an action closes the row first, then runs `onAction`. A drag never counts as a tap, and a
+tap on an open row only closes it. `touch-action: pan-y` keeps vertical scrolling; the transition
+is disabled under `prefers-reduced-motion`. The standard (when to use it, colours, confirm rules)
+is in `CLAUDE.md` under "SwipeRow standard".
 
 ## Local dev
 

@@ -111,7 +111,46 @@ does both. Do not reintroduce a per-row `isRowActive` call for highlighting.
 | `SaveButton.tsx` | `SaveButton`. Client component. Submit button for a server-action form; shows pending + saved state. Props: `children`, `className`, `savedLabel`, `pendingLabel`, `savedForMs`. |
 | `contrast.ts` | `accessiblePair`, `readableOn`, `contrastRatio`, `relativeLuminance`, `parseColor`, `toHex`, `AA_NORMAL`, `AA_LARGE`. Pure TS, no React — importable from a plain Node script or a test. |
 | `BugReportButton.tsx` | `BugReportButton` + types `BugCaptureFn`, `BugCaptureOptions`. Client component. The estate-standard staff "Report a bug" icon: captures the page picture (via the `capture` prop, e.g. html-to-image `toBlob`), URL, click/navigation trail and recent errors, and posts them to the app's own `endpoint`. Props documented in `README.md`. Mount for signed-in staff only. |
+| `SwipeRow.tsx` | `SwipeRow`, `SwipeHoverActions`, `useSwipeOpen`, `SWIPE_ACTION_WIDTH` + types `SwipeAction`, `SwipeSide`, `SwipeTone`. Client component. The estate-standard swipe-to-reveal row for phone lists (props in `README.md`). No business logic: every action is a caller-supplied `onAction`. |
 | `Pill.tsx` | `Pill`, `PillDot` + type `PillProps`. Server-safe (no hooks, no `'use client'`). `Pill` defaults to `tone="soft"` — a pale tint with dark hue-matched text — because the solid version met AA and was *still* reported unreadable. Use `tone="solid"` only where a block of colour is the point. |
+
+## SwipeRow standard (2026-09-30)
+
+Promoted from a consumer's bills list after it proved clearer than button-heavy rows. It lives
+here so any app gets the same gesture; a local re-implementation is refused by the root module registry
+(`swipe-row`, scope repos). Extend this component, never fork it.
+
+**Use it when** a phone list has many similar items and each row has one to three frequent, single-step
+actions (publish/approve, reject, delete, restore, archive, snooze, mark done). The row still opens its
+detail on tap. Swipe is a shortcut, never the only path: every action must also exist in the detail view
+or a desktop control.
+
+**Do not use it** for rows whose action needs input beyond a yes/no (a reason, an amount, a picker) unless
+the action's own handler opens that prompt; for lists with more than three actions (put them in the
+detail); for rows that are themselves drag-reorderable or horizontally scrollable; for tables; or for
+anything not used on a phone.
+
+**Layout.** Swipe LEFT (`rightActions`) = the full set, ordered positive to destructive: approve, restore,
+reject, delete. Swipe RIGHT (`leftActions`) = at most one positive shortcut, and only when that action is
+safe to run from a single row. Never put a destructive action in `leftActions`.
+
+**Colours (`tone`).** `approve` green (publish, approve, mark done, send-to-next-stage), `reject` amber
+(decline, dismiss, snooze), `danger` red (delete, remove), `restore` slate (undo a reject/delete),
+`neutral` for anything else. Do not invent colours per app; the tone is the meaning.
+
+**Confirm rules.** Give `confirm` text to every `danger` action and to every action that moves money,
+sends email or messages to a person, publishes externally, or cannot be undone. Name the item and any
+amount in the text ("Publish Acme (GBP 120.00)?"). Reversible, internal actions (restore,
+archive, mark read) do not confirm. If the handler already asks (a reason prompt, its own dialog), leave
+`confirm` off rather than asking twice.
+
+**Wiring.** One `useSwipeOpen()` in the list; row `openSide={sideOf(id)}` and `onOpenSide={setFor(id)}`;
+call `closeAll()` when a row opens its detail. Build the action array once per row and pass the same
+array to `SwipeHoverActions` so mouse users get identical actions. Put `group/row` on an ancestor. Buttons
+are 44px minimum, icons `h-5 w-5`, labels always shown (colour is never the only cue).
+
+**Known caveat.** White text on the `reject` amber-500 button is about 2.1:1, below AA. It is kept as
+originally shipped (the approved look); a darker amber would fix it and is a design call, not a bug fix.
 
 ## Never hard-code a foreground over a data-driven background
 

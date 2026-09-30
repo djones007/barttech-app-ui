@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-09-30c] — SwipeRow: swipe-to-reveal row actions for phone lists
+
+### Added
+- **`SwipeRow`** (`SwipeRow.tsx`, client component), promoted from a consumer's bills list. `SwipeRow` (touch/pen drag, `touch-action: pan-y`, drag never counts as a tap, tap on an open row closes it, reduced-motion respected, 44px minimum buttons), `SwipeHoverActions` (the same actions as hover/focus icon buttons for desktop), `useSwipeOpen()` (one open row at a time) and types `SwipeAction` (label, icon, tone, optional confirm text, `onAction`), `SwipeTone`, `SwipeSide`. No business logic; the caller's `onAction` is the server action. Standard (when to use, colours, confirm rules) documented in `CLAUDE.md` and `README.md`.
+
 ## [2026-09-30b] — BugReportButton: the page picture keeps the fixed sidebar when scrolled
 
 ### Fixed
