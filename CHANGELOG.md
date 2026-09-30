@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-09-30c] — BugReportButton: the form opens on the first click
+
+### Fixed
+- The icon took the page picture BEFORE opening the form, so on a busy page it looked dead for a few seconds and people clicked again. The form now opens immediately and the picture is taken in the background ("Taking a picture of the page…"); the form is inside the `data-bug-report-ui` wrapper, so it is never in the picture. Sending before the picture is ready waits for it instead of dropping it.
+
 ## [2026-09-30c] — SwipeRow: swipe-to-reveal row actions for phone lists
 
 ### Added

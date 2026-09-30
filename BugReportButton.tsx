@@ -183,6 +183,10 @@ export function BugReportButton({
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<{ href?: string } | null>(null);
   const frozen = useRef<Record<string, unknown> | null>(null);
+  // The picture is taken in the background while the form is already open (the form sits inside
+  // the UI_ATTR wrapper, so it is filtered out of the picture). Taking it BEFORE opening made the
+  // icon look dead for the seconds html-to-image needs on a busy page, and people clicked again.
+  const shotPromise = useRef<Promise<Blob | null> | null>(null);
   const textRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(startRecording, []);
@@ -204,6 +208,8 @@ export function BugReportButton({
     setError(null);
     setDone(null);
     frozen.current = null;
+    shotPromise.current = null;
+    setCapturing(false);
   };
 
   useEffect(() => {
@@ -216,8 +222,8 @@ export function BugReportButton({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, busy]);
 
-  const begin = async () => {
-    if (capturing) return;
+  const begin = () => {
+    if (open) return;
     const now = performance.now();
     // Freeze the context at the click, not after typing.
     frozen.current = {
@@ -234,14 +240,18 @@ export function BugReportButton({
         reducedMotion: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true,
       },
     };
+    setOpen(true);
     if (capture) {
       setCapturing(true);
-      const blob = await capturePage(capture).catch(() => null);
-      setCapturing(false);
-      setPageShot(blob);
-      setPreview(blob ? URL.createObjectURL(blob) : null);
+      const p = capturePage(capture).catch(() => null);
+      shotPromise.current = p;
+      void p.then((blob) => {
+        if (shotPromise.current !== p) return; // closed (or reopened) before it finished
+        setCapturing(false);
+        setPageShot(blob);
+        setPreview(blob ? URL.createObjectURL(blob) : null);
+      });
     }
-    setOpen(true);
   };
 
   const pickUploads = (list: FileList | null) => {
@@ -261,12 +271,14 @@ export function BugReportButton({
     setError(null);
     try {
       const form = new FormData();
-      const sendPage = includePage && pageShot !== null;
+      // Sent before the picture finished: wait for it rather than drop it.
+      const shot = pageShot ?? (includePage && shotPromise.current ? await shotPromise.current : null);
+      const sendPage = includePage && shot !== null;
       form.set("report", JSON.stringify({ ...frozen.current, description, expected, screenshotIncluded: sendPage }));
       let total = 0;
-      if (sendPage && pageShot) {
-        form.append("page", pageShot, "page.webp");
-        total += pageShot.size;
+      if (sendPage && shot) {
+        form.append("page", shot, "page.webp");
+        total += shot.size;
       }
       for (const f of uploads) {
         const small = await toWebp(f);
@@ -293,15 +305,14 @@ export function BugReportButton({
     <div className={className} {...{ [UI_ATTR]: "" }}>
       <button
         type="button"
-        onClick={() => void begin()}
+        onClick={begin}
         aria-label={label}
         title={label}
-        disabled={capturing}
         className="group relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm hover:bg-slate-50 hover:text-slate-900 disabled:opacity-60"
       >
-        <BugIcon className={`h-5 w-5 ${capturing ? "animate-pulse" : ""}`} />
+        <BugIcon className="h-5 w-5" />
         <span className="pointer-events-none absolute right-full top-1/2 mr-2 hidden -translate-y-1/2 whitespace-nowrap rounded bg-slate-900 px-2 py-1 text-xs text-white group-hover:block group-focus-visible:block">
-          {capturing ? "Capturing the page…" : label}
+          {label}
         </span>
       </button>
 
@@ -346,7 +357,9 @@ export function BugReportButton({
                   value={expected}
                   onChange={(e) => setExpected(e.target.value)}
                 />
-                {pageShot && preview ? (
+                {capturing ? (
+                  <p className="text-xs text-slate-500" role="status">Taking a picture of the page…</p>
+                ) : pageShot && preview ? (
                   <label className="flex items-start gap-3 text-sm">
                     <input type="checkbox" className="mt-1" checked={includePage} onChange={(e) => setIncludePage(e.target.checked)} />
                     <span className="flex-1">
