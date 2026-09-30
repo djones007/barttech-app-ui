@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-09-30e] — Dependency updates (Dependabot #7)
+
+### Changed
+- Dependabot group bump (#7): `@types/node` 22 → 26 (major, types only), `@types/react`/`@types/react-dom` 19.3.0, `react`/`react-dom` 19.3.0 (dev), `globals` 17.12.0, `typescript-eslint` 8.70.1. Typecheck, lint and tests pass; `npm audit` 0 vulnerabilities.
+
 ## [2026-09-30d] — npm audit fix: brace-expansion advisories
 
 ### Fixed
