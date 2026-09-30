@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-09-30d] — npm audit fix: brace-expansion advisories
+
+### Fixed
+- Lockfile-only bump of transitive brace-expansion@1.1.21, brace-expansion@5.0.12, clearing the high-severity `brace-expansion` advisory. `npm audit` reports 0 vulnerabilities. No application code or package.json changed.
+
 ## [2026-09-30c] — BugReportButton: the form opens on the first click
 
 ### Fixed
