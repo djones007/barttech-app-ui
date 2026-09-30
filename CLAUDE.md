@@ -150,7 +150,8 @@ array to `SwipeHoverActions` so mouse users get identical actions. Put `group/ro
 are 44px minimum, icons `h-5 w-5`, labels always shown (colour is never the only cue).
 
 **Known caveat.** White text on the `reject` amber-500 button is about 2.1:1, below AA. It is kept as
-originally shipped (the approved look); a darker amber would fix it and is a design call, not a bug fix.
+originally shipped. **Decided by Dom 2026-09-30: keep it** — do not darken it or raise it as a finding; the label
+is always shown beside the icon, so the colour is never the only cue.
 
 ## Never hard-code a foreground over a data-driven background
 
