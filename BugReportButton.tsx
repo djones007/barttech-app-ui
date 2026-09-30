@@ -41,7 +41,7 @@ export type BugCaptureOptions = {
   height: number;
   pixelRatio: number;
   cacheBust: boolean;
-  style: { transform: string; transformOrigin: string };
+  style: { position: string; left: string; top: string };
   filter: (node: HTMLElement) => boolean;
 };
 export type BugCaptureFn = (node: HTMLElement, options: BugCaptureOptions) => Promise<Blob | null>;
@@ -131,8 +131,11 @@ async function capturePage(capture: BugCaptureFn): Promise<Blob | null> {
     height: h,
     pixelRatio: 1,
     cacheBust: true,
-    // Shift the page so the part in view lands at the image's origin.
-    style: { transform: `translate(${-window.scrollX}px, ${-window.scrollY}px)`, transformOrigin: "top left" },
+    // Shift the page so the part in view lands at the image's origin. An OFFSET, never a transform:
+    // a transformed <body> becomes the containing block for every position:fixed descendant (the
+    // sidebar, a bell), so they scrolled away with the page and any report filed below the top of
+    // a page came out with a blank strip where the sidebar was (first live report, 2026-09-30).
+    style: { position: "relative", left: `${-window.scrollX}px`, top: `${-window.scrollY}px` },
     filter: (node) => !(node instanceof HTMLElement && node.hasAttribute?.(UI_ATTR)),
   });
   const timeout = new Promise<null>((res) => setTimeout(() => res(null), 10_000));

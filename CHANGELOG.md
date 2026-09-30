@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-09-30b] — BugReportButton: the page picture keeps the fixed sidebar when scrolled
+
+### Fixed
+- The automatic page picture shifted `<body>` with a `transform` to bring the scrolled region to the image origin. A transformed element becomes the containing block for every `position: fixed` descendant, so the sidebar and any fixed header scrolled away with the page: a report filed below the top of a page showed a blank strip where the nav was (first live report). It now shifts with a relative `left`/`top` offset, which leaves fixed elements pinned. `BugCaptureOptions.style` changes shape accordingly (html-to-image `toBlob` still fits it).
+
 ## [2026-09-30] — BugReportButton: the staff "Report a bug" icon
 
 ### Added
