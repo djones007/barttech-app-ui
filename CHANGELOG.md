@@ -2,6 +2,29 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-10-01] — web-core CI pin bumped to `608c788`
+
+### Changed
+- **`@barttech/web-core` CI pin bumped to `608c788`** (from `e30fd39`) by `tools/web-core-propagate.sh`.
+
+Upstream commits in this bump:
+
+- `608c788` — safeRedirectPath: never return a result starting with // or containing backslash/control chars
+- `080bfe5` — pageEvents: guard PAGE_EVENTS_URL with isSafeOutboundUrl before sending bearer token
+- `14c4520` — check-design-standard: ratcheted gate for the design standard's banned patterns
+- `acc3350` — docs(changelog): record Dependabot #10 dependency bump
+- `b4a6927` — build(deps-dev): bump the all-dependencies group across 1 directory with 4 updates (#10)
+- `1fd3682` — bugReport: server half of the staff Report a bug button
+- `ea8b86e` — npm audit fix: brace-expansion (dev-only), unblocks CI audit step
+- `b3517ea` — check-webhook-swallowed-errors: warn-only catch-then-2xx webhook gate (estate issue d5995de7)
+- `07184be` — cronPause: scheduled-job pause switch (fail-open); HeartbeatStatus gains idle + paused; noteCronCaveat
+- `e76cda8` — metaCapi: hashed ln/ph/country/external_id, fbc from a stored click, sendCAPIEventResult
+
+`WEB_CORE_REF` is the commit CI fetches its shared gate scripts from and runs with `node`. Bumping it is what makes a gate-script fix take effect here — pinning is why that no longer happens on its own, and adopting a change deliberately is the point.
+
+
+A propagation push is a production deploy, so it gets an entry like any other. Review the upstream commits above for anything behaviour-affecting in this repo.
+
 ## [2026-09-30e] — Dependency updates (Dependabot #7)
 
 ### Changed
