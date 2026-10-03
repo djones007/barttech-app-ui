@@ -481,7 +481,13 @@ export function LeftNav({
         >
           <IconMenu className="h-5 w-5" />
         </button>
-        <span className="text-sm font-semibold text-slate-900">{appName}</span>
+        <Link
+          href={homeHref}
+          onClick={closeMobile}
+          className="truncate rounded-md text-sm font-semibold text-slate-900 hover:text-slate-700"
+        >
+          {appName}
+        </Link>
       </div>
 
       {/* Mobile backdrop */}

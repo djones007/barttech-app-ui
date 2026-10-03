@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-10-03b] — LeftNav: mobile top-bar app name links home
+
+### Changed
+- **`LeftNav` mobile top bar: the app name is now a link to `homeHref`** (it was a bare `<span>`), matching the desktop sidebar header, which already linked home. Closes the mobile menu on click. Applies to every consumer on its next app-ui bump. Requested via the Command Centre bug button on `/walk` (estate issue ca1ffbfd).
+
 ## [2026-10-03] — web-core CI pin bumped to `f40018e`
 
 ### Changed
