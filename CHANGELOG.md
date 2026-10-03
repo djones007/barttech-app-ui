@@ -2,6 +2,31 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-10-03] — web-core CI pin bumped to `f40018e`
+
+### Changed
+- **`@barttech/web-core` CI pin bumped to `f40018e`** (from `608c788`) by `tools/web-core-propagate.sh`.
+
+Upstream commits in this bump:
+
+- `f40018e` — Game Pass is always capitalised (Dom correction)
+- `808c17d` — Buyer-facing "ticket" is now "game pass" (safetyNet, ownAddress, buyerContact copy)
+- `236eec3` — shared-modules.json: remove the trailing comma that made the file invalid JSON (check-resource-registration could not load it)
+- `ebc2c31` — giftAvailability: server-side gift availability client (mechanism only)
+- `db22fa7` — Merge remote-tracking branch 'origin/main' into prepaid-codes
+- `af2cd56` — prepaidRedeem: generic server-side client for accepting prepaid codes (mechanism only)
+- `0ed36d7` — check-resource-registration: drop useless escape in ref pattern (lint, estate 0dfe1c6b)
+- `22b9df4` — Registration gate reads the manifest at WEB_CORE_REF; Node 22 timeout test keeps the loop alive (estate 0dfe1c6b, de9b1cb8)
+- `592a4df` — buyerContact: 'Your order is safe' when there is no ticket
+- `30f684f` — checkBuyerDeliverability: accept a promise of marketing reasons, awaited in parallel
+- `efc1071` — ownAddress: shared banner copy and one-click complaint opt-in logic (once per order, no marketing writes)
+- `7b1ec2a` — Buyer safety net: email typo suggester, own-address deliverability check + one-click complaint opt-in, neutral success-page block, ticket PDF, human hand-off copy, success-page gate
+
+`WEB_CORE_REF` is the commit CI fetches its shared gate scripts from and runs with `node`. Bumping it is what makes a gate-script fix take effect here — pinning is why that no longer happens on its own, and adopting a change deliberately is the point.
+
+
+A propagation push is a production deploy, so it gets an entry like any other. Review the upstream commits above for anything behaviour-affecting in this repo.
+
 ## [2026-10-01] — web-core CI pin bumped to `608c788`
 
 ### Changed
