@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-10-06] — Next.js 16.3.6 → 16.3.8 (Aikido critical)
+
+### Changed
+- **`next` pinned to `16.3.8`** (from `16.3.6`) to clear Aikido's critical Next.js group (SSRF `CVE-2026-94483` plus six related CVEs, all fixed in 16.3.8). The lockfile moved only `next`, `@next/env` and the `@next/swc-*` platform binaries.
+
 ## [2026-10-03b] — LeftNav: mobile top-bar app name links home
 
 ### Changed
