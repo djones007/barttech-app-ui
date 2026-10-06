@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-10-06b] — Dependency advisories: source-map-js, sharp (CI audit gate)
+
+### Fixed
+- `source-map-js` raised past `1.2.1` (GHSA-68fv-2mgg-jv7q, event-loop DoS via source-map section offsets) and `sharp` to `0.35.5` (CVE-2026-96889 / GHSA-wq5f-xc86-pv6w, librsvg). Both were failing the CI `npm audit --audit-level=high` gate. The `sharp` `overrides` floor is raised to `>=0.35.5` so the lockfile cannot be held below it. Transitive `dompurify` / `postcss-selector-parser` / `katex` moved where the lockfile allowed.
+
 ## [2026-10-06] — Next.js 16.3.6 → 16.3.8 (Aikido critical)
 
 ### Changed
