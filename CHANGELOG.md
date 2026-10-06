@@ -2,6 +2,20 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-10-06c] — web-core CI pin bumped to `ba9d248`
+
+### Changed
+- **`@barttech/web-core` CI pin bumped to `ba9d248`** (from `f40018e`) by `tools/web-core-propagate.sh`.
+
+Upstream commits in this bump:
+
+- `ba9d248` — Server twin for click events: trackMetaTwin + sendClickEvent (every Meta conversion event gets a server twin with one event id)
+
+`WEB_CORE_REF` is the commit CI fetches its shared gate scripts from and runs with `node`. Bumping it is what makes a gate-script fix take effect here — pinning is why that no longer happens on its own, and adopting a change deliberately is the point.
+
+
+A propagation push is a production deploy, so it gets an entry like any other. Review the upstream commits above for anything behaviour-affecting in this repo.
+
 ## [2026-10-06b] — Dependency advisories: source-map-js, sharp (CI audit gate)
 
 ### Fixed
