@@ -2,6 +2,23 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-10-10] — web-core CI pin bumped to `2c71967`
+
+### Changed
+- **`@barttech/web-core` CI pin bumped to `2c71967`** (from `ba9d248`) by `tools/web-core-propagate.sh`.
+
+Upstream commits in this bump:
+
+- `2c71967` — signedRequest: signed-timestamp scheme for producer requests; bartmailEvent signs with it and sends an event_id (estate issue 07e173b7)
+- `763b133` — Bump source-map-js (npm audit high advisory)
+- `9e9ae6f` — check-dead-space.mjs: CI gate that a repo's mobile spec imports and calls auditDeadSpace (issue 74cbe86c)
+- `9880092` — deadSpace.ts: shared dead-space/padding audit for every repo's mobile spec (issue 74cbe86c)
+
+`WEB_CORE_REF` is the commit CI fetches its shared gate scripts from and runs with `node`. Bumping it is what makes a gate-script fix take effect here — pinning is why that no longer happens on its own, and adopting a change deliberately is the point.
+
+
+A propagation push is a production deploy, so it gets an entry like any other. Review the upstream commits above for anything behaviour-affecting in this repo.
+
 ## [2026-10-06c] — web-core CI pin bumped to `ba9d248`
 
 ### Changed
