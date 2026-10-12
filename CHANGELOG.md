@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-10-12] — BugReportButton: pick a kind before sending
+
+### Added
+- A "What kind is it?" picker (Urgent, Security, Something's broken, Layout / looks off, Nice to have) sent as `kind` in the report JSON. Defaults to "Something's broken". The tracker uses it to set type and priority so urgent and security reports can be worked first when credits are tight.
+
 ## [2026-10-10] — web-core CI pin bumped to `2c71967`
 
 ### Changed

@@ -15,7 +15,7 @@ import { usePathname } from "next/navigation";
  *   - the trail that led here: the last 25 clicks and in-app navigations, with timings. A click is
  *     recorded as the control's role and label ("button \"Save\""), NEVER an input's value;
  *   - the last few uncaught errors and unhandled rejections, and a Sentry event id if given one.
- * The person then says what went wrong (required) and what they expected (optional), can untick the
+ * The person picks a kind (urgent, security, broken, layout, nice to have), says what went wrong (required) and what they expected (optional), can untick the
  * picture, and can attach up to two screenshots of their own.
  *
  * ## Why `capture` is a prop
@@ -56,6 +56,20 @@ const MAX_UPLOADS = 2;
 const MAX_UPLOAD_BYTES = 8 * 1024 * 1024; // before downscaling
 const MAX_TOTAL_BYTES = 4 * 1024 * 1024; // after downscaling, under the serverless body cap
 const UI_ATTR = "data-bug-report-ui";
+
+/**
+ * What the reporter says this is. Ids match web-core `BUG_REPORT_KINDS`; the tracker turns them into
+ * an issue type and priority, so conserve mode can work only the urgent, security and broken ones
+ * and leave layout niggles and wish-list items for full mode.
+ */
+const KINDS = [
+  { id: "urgent", label: "Urgent", hint: "Blocks work or loses money" },
+  { id: "security", label: "Security", hint: "Data exposed or access wrong" },
+  { id: "bug", label: "Something's broken", hint: "Wrong result or error" },
+  { id: "layout", label: "Layout / looks off", hint: "Cosmetic, can wait" },
+  { id: "feature", label: "Nice to have", hint: "Future feature or idea" },
+] as const;
+type KindId = (typeof KINDS)[number]["id"];
 
 // ------------------------------------------------------------------ recorder (one per page)
 const crumbs: Crumb[] = [];
@@ -175,6 +189,7 @@ export function BugReportButton({
   const [capturing, setCapturing] = useState(false);
   const [description, setDescription] = useState("");
   const [expected, setExpected] = useState("");
+  const [kind, setKind] = useState<KindId>("bug");
   const [includePage, setIncludePage] = useState(true);
   const [pageShot, setPageShot] = useState<Blob | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -201,6 +216,7 @@ export function BugReportButton({
     setOpen(false);
     setDescription("");
     setExpected("");
+    setKind("bug");
     setIncludePage(true);
     setPageShot(null);
     setPreview(null);
@@ -274,7 +290,7 @@ export function BugReportButton({
       // Sent before the picture finished: wait for it rather than drop it.
       const shot = pageShot ?? (includePage && shotPromise.current ? await shotPromise.current : null);
       const sendPage = includePage && shot !== null;
-      form.set("report", JSON.stringify({ ...frozen.current, description, expected, screenshotIncluded: sendPage }));
+      form.set("report", JSON.stringify({ ...frozen.current, kind, description, expected, screenshotIncluded: sendPage }));
       let total = 0;
       if (sendPage && shot) {
         form.append("page", shot, "page.webp");
@@ -338,6 +354,23 @@ export function BugReportButton({
                 <p className="text-xs text-slate-500">
                   Sends this page&apos;s address, the last few things you clicked, any errors on the page and the details below.
                 </p>
+                <fieldset className="space-y-1">
+                  <legend className="text-sm font-medium">What kind is it?</legend>
+                  <div className="grid grid-cols-1 gap-1 sm:grid-cols-2">
+                    {KINDS.map((k) => (
+                      <label
+                        key={k.id}
+                        className={`flex cursor-pointer items-start gap-2 rounded-md border px-2.5 py-1.5 text-sm ${kind === k.id ? "border-slate-900 bg-slate-50" : "border-slate-200 hover:bg-slate-50"}`}
+                      >
+                        <input type="radio" name="bug-report-kind" className="mt-1" checked={kind === k.id} onChange={() => setKind(k.id)} />
+                        <span>
+                          <span className="font-medium">{k.label}</span>
+                          <span className="block text-xs text-slate-500">{k.hint}</span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </fieldset>
                 <label className="block text-sm font-medium" htmlFor="bug-report-what">What went wrong?</label>
                 <textarea
                   id="bug-report-what"
