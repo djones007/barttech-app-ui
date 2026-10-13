@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+## [2026-10-13] — workflow jobs have timeout-minutes
+
+### Changed
+
+- `ci.yml, public-hygiene.yml` jobs now set `timeout-minutes`, so a hung step is cancelled instead of running to GitHub's 6-hour default on metered minutes. Estate issue a843e60c.
+
 ## [2026-10-12] — BugReportButton: pick a kind before sending
 
 ### Added
