@@ -8,6 +8,27 @@ All notable changes to this project are documented here. Format follows [Keep a 
 
 - `ci.yml, public-hygiene.yml` jobs now set `timeout-minutes`, so a hung step is cancelled instead of running to GitHub's 6-hour default on metered minutes. Estate issue a843e60c.
 
+## [2026-10-13b] — web-core CI pin bumped to `6197672`
+
+### Changed
+- **`@barttech/web-core` CI pin bumped to `6197672`** (from `2c71967`) by `tools/web-core-propagate.sh`.
+
+Upstream commits in this bump:
+
+- `6197672` — web-core: Turnstile host ignored by dead-space scan (Fix Engine 42a9ee69); sendEmailitEmail returns messageId (4ed0e6af)
+- `ab0ea3a` — CI: timeout-minutes on every workflow job (Fix Engine a843e60c)
+- `a27a8b1` — Merge pull request #16 from djones007/fix/click-event-beacon-not-automated
+- `172cd70` — fix(metaCapi): sendClickEvent no longer refuses every real click beacon
+- `815f7a7` — Merge pull request #15 from djones007/claude/laughing-bohr-5a5lot
+- `9a8cc6e` — experiments: experimentEventTag/liveAssignment take a preferKey
+- `be16078` — Merge claude/laughing-brahmagupta-8sbfku: bug-report kind
+- `eecbaa8` — bugReport: reporter picks a kind (urgent/security/bug/layout/feature)
+
+`WEB_CORE_REF` is the commit CI fetches its shared gate scripts from and runs with `node`. Bumping it is what makes a gate-script fix take effect here — pinning is why that no longer happens on its own, and adopting a change deliberately is the point.
+
+
+A propagation push is a production deploy, so it gets an entry like any other. Review the upstream commits above for anything behaviour-affecting in this repo.
+
 ## [2026-10-12] — BugReportButton: pick a kind before sending
 
 ### Added
