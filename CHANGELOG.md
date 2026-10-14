@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
+
+## [2026-10-14] — BugReportButton: drag-and-drop screenshots
+
+### Added
+- The screenshot picker is now a drop zone: drag a file onto it, click to choose, or paste an image. Choices are added to rather than replaced, with a thumbnail and Remove for each (`MAX_UPLOADS`, two). The form text points to pasting a Zight link into the description, which the receiving app resolves.
+
 ## [2026-10-13] — workflow jobs have timeout-minutes
 
 ### Changed

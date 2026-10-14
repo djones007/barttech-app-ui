@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 
 /**
@@ -167,6 +167,50 @@ function BugIcon({ className }: { className?: string }) {
   );
 }
 
+/**
+ * Your own screenshots: drag a file onto the box, click it to choose one, or paste an image while the box has focus.
+ * A Zight share link typed into the description works as well: the server fetches the picture behind it when it files the report.
+ */
+function UploadDrop({ files, onAdd, onRemove }: { files: File[]; onAdd: (f: File[]) => void; onRemove: (i: number) => void }) {
+  const [over, setOver] = useState(false);
+  const input = useRef<HTMLInputElement>(null);
+  const urls = useMemo(() => files.map((f) => URL.createObjectURL(f)), [files]);
+  useEffect(() => () => urls.forEach((u) => URL.revokeObjectURL(u)), [urls]);
+  return (
+    <div>
+      <div
+        role="button"
+        tabIndex={0}
+        aria-label="Add your own screenshot. Drop a file here, press Enter to choose one, or paste an image."
+        onClick={() => input.current?.click()}
+        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), input.current?.click())}
+        onDragOver={(e) => { e.preventDefault(); setOver(true); }}
+        onDragLeave={() => setOver(false)}
+        onDrop={(e) => { e.preventDefault(); setOver(false); onAdd(Array.from(e.dataTransfer.files)); }}
+        onPaste={(e) => { const f = Array.from(e.clipboardData.files); if (f.length) { e.preventDefault(); onAdd(f); } }}
+        className={`flex cursor-pointer flex-col items-center gap-0.5 rounded-md border-2 border-dashed px-3 py-3 text-center text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 ${over ? "border-slate-600 bg-slate-100" : "border-slate-300 bg-slate-50 hover:bg-slate-100"}`}
+      >
+        <span className="font-medium">Add your own screenshot</span>
+        <span className="text-xs text-slate-600">Drop it here, click to choose a file, or paste it. Up to {MAX_UPLOADS}.</span>
+        <span className="text-xs text-slate-600">Or paste a Zight link into the description.</span>
+        <input ref={input} type="file" hidden accept="image/png,image/jpeg,image/webp" multiple onChange={(e) => { onAdd(Array.from(e.target.files ?? [])); e.target.value = ""; }} />
+      </div>
+      {files.length > 0 && (
+        <ul className="mt-2 space-y-1.5">
+          {files.map((f, i) => (
+            <li key={`${f.name}-${f.size}-${i}`} className="flex items-center gap-2 text-xs">
+              {/* A plain <img>: a local blob: URL, not an asset next/image could optimise. */}
+              <img src={urls[i]} alt="" className="h-10 w-10 rounded object-cover" />
+              <span className="flex-1 truncate">{f.name}</span>
+              <button type="button" aria-label={`Remove ${f.name}`} onClick={() => onRemove(i)} className="rounded border border-slate-200 px-2 py-1 hover:bg-slate-50">Remove</button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 export function BugReportButton({
   endpoint,
   capture,
@@ -270,15 +314,18 @@ export function BugReportButton({
     }
   };
 
-  const pickUploads = (list: FileList | null) => {
+  // Add to what is already chosen (drop, browse or paste), never replace it.
+  const addUploads = (list: File[]) => {
     setError(null);
-    const files = Array.from(list ?? []).slice(0, MAX_UPLOADS);
-    const bad = files.find((f) => !["image/png", "image/jpeg", "image/webp"].includes(f.type) || f.size > MAX_UPLOAD_BYTES);
+    if (!list.length) return;
+    const bad = list.find((f) => !["image/png", "image/jpeg", "image/webp"].includes(f.type) || f.size > MAX_UPLOAD_BYTES);
     if (bad) {
       setError("Screenshots must be PNG, JPG or WebP, under 8 MB each.");
       return;
     }
-    setUploads(files);
+    const next = [...uploads, ...list];
+    if (next.length > MAX_UPLOADS) setError(`${MAX_UPLOADS} screenshots at most. The first ${MAX_UPLOADS} were kept.`);
+    setUploads(next.slice(0, MAX_UPLOADS));
   };
 
   const send = async () => {
@@ -404,10 +451,7 @@ export function BugReportButton({
                 ) : (
                   capture && <p className="text-xs text-slate-500">The picture of the page could not be taken. Attach a screenshot if it helps.</p>
                 )}
-                <label className="block text-sm">
-                  <span className="font-medium">Attach your own screenshots</span> <span className="text-slate-500">(up to 2)</span>
-                  <input type="file" accept="image/png,image/jpeg,image/webp" multiple className="mt-1 block w-full text-sm" onChange={(e) => pickUploads(e.target.files)} />
-                </label>
+                <UploadDrop files={uploads} onAdd={addUploads} onRemove={(i) => setUploads(uploads.filter((_, j) => j !== i))} />
                 {error && <p className="text-sm text-red-700" role="alert">{error}</p>}
                 <div className="flex justify-end gap-2 pt-1">
                   <button type="button" disabled={busy} onClick={reset} className="rounded-md border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50">Cancel</button>
