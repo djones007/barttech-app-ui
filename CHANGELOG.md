@@ -3,6 +3,11 @@
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
 
+## [2026-10-15b] — Security: zod >=4.6.7 (Aikido CVE-2023-54404)
+
+### Fixed
+- Pinned `zod` to `^4.6.7` (override), closing the array-schema memory-exhaustion DoS (fixed in 4.6.6). Lockfile change is the single package.
+
 ## [2026-10-14] — BugReportButton: drag-and-drop screenshots
 
 ### Added
