@@ -3,6 +3,29 @@
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
 
+## [2026-10-20] — web-core CI pin bumped to `7872a16`
+
+### Changed
+- **`@barttech/web-core` CI pin bumped to `7872a16`** (from `6197672`) by `tools/web-core-propagate.sh`.
+
+Upstream commits in this bump:
+
+- `7872a16` — icon gate: refuse the default Vercel favicon
+- `c986e79` — bartmail: surface brand lookup errors instead of reporting 'brand not found' (Fix Engine 2542e82e)
+- `bb3b1e6` — pageEvents: send utm_content and utm_term (which ad sent the visitor)
+- `e96c5db` — CHANGELOG: vercel-ignore new-branch build, log SHAs, forbid .git/.env* in .vercelignore
+- `53c3e01` — check-vercel-ignore: .git and .env* must NOT be in .vercelignore (Vercel applies it to its git clone and the build gates need them)
+- `5dddaed` — vercel-ignore: no previous deployment on a branch builds (found on a Vercel preview, estate 39be6bdb)
+- `c1a4a2e` — vercel-ignore: print head/previous/base SHAs to the build log (diagnostic, estate 39be6bdb)
+- `7cdbc45` — web-core: scripts/vercel-ignore.sh shared ignoreCommand + gate + tests (Fix Engine 39be6bdb)
+- `d788199` — web-core: zightLinks.ts, shared Zight share-link resolver (moved from two local copies)
+- `4f08209` — web-core: scripts/lighthouse-gate.mjs, page-speed gate for weekly smoke jobs (CC task 00f3e85b)
+
+`WEB_CORE_REF` is the commit CI fetches its shared gate scripts from and runs with `node`. Bumping it is what makes a gate-script fix take effect here — pinning is why that no longer happens on its own, and adopting a change deliberately is the point.
+
+
+A propagation push is a production deploy, so it gets an entry like any other. Review the upstream commits above for anything behaviour-affecting in this repo.
+
 ## [2026-10-15b] — Security: zod >=4.6.7 (Aikido CVE-2023-54404)
 
 ### Fixed
