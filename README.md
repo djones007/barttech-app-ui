@@ -27,6 +27,7 @@ So UI gets its own repo, mounted **only where it is used**.
 |------|---------|
 | `LeftNav.tsx` | `LeftNav`, and the types `NavItem`, `NavLinkItem`, `NavChildItem`, `NavGroupItem`, `LeftNavProps` — the left-hand sidebar shell: app header, link/group nav with accordions, off-canvas mobile drawer, and a pinned bottom block (Changelog · Help · signed-in email · Sign out). Client component (`"use client"`). |
 | `contrast.ts` | `accessiblePair`, `readableOn`, `contrastRatio`, `relativeLuminance`, `parseColor`, `toHex`, `AA_NORMAL`, `AA_LARGE` — WCAG 2.1 colour maths. Pure TypeScript, no React. |
+| `Dictate.tsx` + `dictation.ts` | `useDictation`, `DictateButton`, `DictateStatus` (browser Web Speech dictation into a field; hidden when unsupported) and the pure helpers `appendDictation`, `remainingChars`, `dictationErrorMessage`. |
 | `SwipeRow.tsx` | `SwipeRow`, `SwipeHoverActions`, `useSwipeOpen`, `SWIPE_ACTION_WIDTH` + types `SwipeAction`, `SwipeSide`, `SwipeTone`. Swipe-to-reveal row actions for phone lists. |
 | `Pill.tsx` | `Pill`, `PillDot`, type `PillProps` — a coloured chip whose text colour is derived from its background. No hooks, so it works in a server component. |
 

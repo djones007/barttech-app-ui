@@ -3,6 +3,15 @@
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
 
+## [2026-10-22] — Dictation (mic button) for text fields
+
+### Added
+- `Dictate.tsx`: `useDictation`, `DictateButton`, `DictateStatus`. Browser Web Speech dictation (en-GB, continuous, tap to start/stop, interim words shown outside the field, appended at the end, respects `maxLength`). Hidden where unsupported (Firefox); plain note if the microphone is denied. No dependency.
+- `dictation.ts` pure helpers (`appendDictation`, `remainingChars`, `dictationErrorMessage`) with unit tests wired into `npm test`.
+
+### Changed
+- `BugReportButton`: mic button beside "What went wrong?" and "What did you expect?".
+
 ## [2026-10-20] — web-core CI pin bumped to `7872a16`
 
 ### Changed
