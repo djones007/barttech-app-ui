@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import { DictateButton, DictateStatus, useDictation } from "./Dictate";
 
 /**
  * The staff "Report a bug" button: a bug icon (tooltip "Report a bug") that files what is wrong on
@@ -233,6 +234,8 @@ export function BugReportButton({
   const [capturing, setCapturing] = useState(false);
   const [description, setDescription] = useState("");
   const [expected, setExpected] = useState("");
+  const dictWhat = useDictation({ value: description, onChange: setDescription, maxLength: 2000 });
+  const dictExpected = useDictation({ value: expected, onChange: setExpected, maxLength: 1000 });
   const [kind, setKind] = useState<KindId>("bug");
   const [includePage, setIncludePage] = useState(true);
   const [pageShot, setPageShot] = useState<Blob | null>(null);
@@ -257,6 +260,8 @@ export function BugReportButton({
   }, [preview]);
 
   const reset = () => {
+    dictWhat.stop();
+    dictExpected.stop();
     setOpen(false);
     setDescription("");
     setExpected("");
@@ -418,7 +423,10 @@ export function BugReportButton({
                     ))}
                   </div>
                 </fieldset>
-                <label className="block text-sm font-medium" htmlFor="bug-report-what">What went wrong?</label>
+                <div className="flex items-center justify-between gap-2">
+                  <label className="block text-sm font-medium" htmlFor="bug-report-what">What went wrong?</label>
+                  <DictateButton dictation={dictWhat} label="Dictate what went wrong" />
+                </div>
                 <textarea
                   id="bug-report-what"
                   ref={textRef}
@@ -428,7 +436,11 @@ export function BugReportButton({
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 />
-                <label className="block text-sm font-medium" htmlFor="bug-report-expected">What did you expect to happen? <span className="font-normal text-slate-500">(optional)</span></label>
+                <DictateStatus dictation={dictWhat} />
+                <div className="flex items-center justify-between gap-2">
+                  <label className="block text-sm font-medium" htmlFor="bug-report-expected">What did you expect to happen? <span className="font-normal text-slate-500">(optional)</span></label>
+                  <DictateButton dictation={dictExpected} label="Dictate what you expected" />
+                </div>
                 <textarea
                   id="bug-report-expected"
                   className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm"
@@ -437,6 +449,7 @@ export function BugReportButton({
                   value={expected}
                   onChange={(e) => setExpected(e.target.value)}
                 />
+                <DictateStatus dictation={dictExpected} />
                 {capturing ? (
                   <p className="text-xs text-slate-500" role="status">Taking a picture of the page…</p>
                 ) : pageShot && preview ? (

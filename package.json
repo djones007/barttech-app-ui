@@ -7,7 +7,7 @@
   "scripts": {
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "tsc --outDir .testbuild --module commonjs --target es2022 --skipLibCheck --moduleResolution node --esModuleInterop --types node contrast.ts contrast.test.ts && node --test \".testbuild/*.test.js\""
+    "test": "tsc --outDir .testbuild --module commonjs --target es2022 --skipLibCheck --moduleResolution node --esModuleInterop --types node contrast.ts contrast.test.ts dictation.ts dictation.test.ts && node --test \".testbuild/*.test.js\""
   },
   "peerDependencies": {
     "next": ">=15",
