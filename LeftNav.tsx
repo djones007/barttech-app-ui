@@ -281,7 +281,7 @@ function tipHandlers(description: string | undefined, onTip: OnTip | undefined) 
 
 function RowLabel({ label, description, muted }: { label: string; description?: string; muted: string }) {
   return (
-    <span className="min-w-0">
+    <span className="min-w-0 text-left">
       <span className="block truncate">{label}</span>
       {description && <span className={cls("block text-xs font-normal", muted)}>{description}</span>}
     </span>
@@ -518,7 +518,7 @@ export function LeftNav({
   const onTip: OnTip = (text, el) => {
     if (!text || !el) return setTip(null);
     const box = el.getBoundingClientRect();
-    setTip({ text, top: Math.min(box.top + box.height / 2, window.innerHeight - 48), left: box.right + 8 });
+    setTip({ text, top: Math.min(box.top + box.height / 2, window.innerHeight - 48), left: (el.closest("aside") ?? el).getBoundingClientRect().right + 8 });
   };
   const initial = appInitial ?? appName.charAt(0).toUpperCase();
 
