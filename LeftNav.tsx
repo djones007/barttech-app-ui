@@ -31,6 +31,12 @@ export type NavLinkItem = {
    * inactive AND — worse — it drags its parent group's `hasActiveChild` to
    * false, so a group of nothing but external links never highlights at all.
    */
+  /**
+   * One line saying what this row is for. Shows as a tooltip on hover and
+   * keyboard focus. Touch screens have no hover, so any description also adds a
+   * "What's this?" switch above the nav that prints them under the rows.
+   */
+  description?: string;
   external?: boolean;
 };
 
@@ -42,12 +48,16 @@ export type NavChildItem = {
   exact?: boolean;
   /** See `NavLinkItem.external`. */
   external?: boolean;
+  /** See `NavLinkItem.description`. */
+  description?: string;
 };
 
 export type NavGroupItem = {
   kind: "group";
   label: string;
   icon?: React.ElementType;
+  /** See `NavLinkItem.description`. */
+  description?: string;
   children: NavChildItem[];
 };
 
@@ -254,6 +264,30 @@ function IconLogOut({ className }: { className?: string }) {
 
 // --- Nav rows ---
 
+/** Show the tooltip for a row, or hide it with `null`. */
+type OnTip = (text: string | null, el?: HTMLElement) => void;
+
+/** Hover and keyboard-focus handlers for a row with a description. */
+function tipHandlers(description: string | undefined, onTip: OnTip | undefined) {
+  if (!description || !onTip) return {};
+  return {
+    "aria-description": description,
+    onMouseEnter: (e: React.MouseEvent<HTMLElement>) => onTip(description, e.currentTarget),
+    onMouseLeave: () => onTip(null),
+    onFocus: (e: React.FocusEvent<HTMLElement>) => onTip(description, e.currentTarget),
+    onBlur: () => onTip(null),
+  };
+}
+
+function RowLabel({ label, description, muted }: { label: string; description?: string; muted: string }) {
+  return (
+    <span className="min-w-0">
+      <span className="block truncate">{label}</span>
+      {description && <span className={cls("block text-xs font-normal", muted)}>{description}</span>}
+    </span>
+  );
+}
+
 function NavLinkRow({
   href,
   label,
@@ -261,6 +295,9 @@ function NavLinkRow({
   active,
   nested,
   external,
+  description,
+  showDescription,
+  onTip,
   onNavigate,
   accent,
 }: {
@@ -270,6 +307,9 @@ function NavLinkRow({
   active: boolean;
   nested?: boolean;
   external?: boolean;
+  description?: string;
+  showDescription?: boolean;
+  onTip?: OnTip;
   onNavigate: () => void;
   accent: string;
 }) {
@@ -279,11 +319,12 @@ function NavLinkRow({
     active ? "text-white" : "text-slate-600 hover:bg-slate-100",
   );
   const activeStyle = active ? { backgroundColor: accent } : undefined;
+  const tip = tipHandlers(description, showDescription ? undefined : onTip);
 
   const body = (
     <>
       {Icon && <Icon className="h-4 w-4 shrink-0" />}
-      <span className="truncate">{label}</span>
+      <RowLabel label={label} description={showDescription ? description : undefined} muted={active ? "text-white/80" : "text-slate-500"} />
       {external && (
         <>
           <IconExternal className="ml-auto h-3.5 w-3.5 shrink-0 opacity-60" />
@@ -307,6 +348,7 @@ function NavLinkRow({
         onClick={onNavigate}
         className={className}
         style={activeStyle}
+        {...tip}
       >
         {body}
       </a>
@@ -322,6 +364,7 @@ function NavLinkRow({
       aria-current={active ? "page" : undefined}
       className={className}
       style={activeStyle}
+      {...tip}
     >
       {body}
     </Link>
@@ -333,6 +376,8 @@ function NavGroupRow({
   activeHref,
   open,
   onToggle,
+  showDescriptions,
+  onTip,
   onNavigate,
   accent,
 }: {
@@ -340,6 +385,8 @@ function NavGroupRow({
   activeHref: string | null;
   open: boolean;
   onToggle: () => void;
+  showDescriptions: boolean;
+  onTip: OnTip;
   onNavigate: () => void;
   accent: string;
 }) {
@@ -352,6 +399,7 @@ function NavGroupRow({
         type="button"
         onClick={onToggle}
         aria-expanded={open}
+        {...tipHandlers(item.description, showDescriptions ? undefined : onTip)}
         className={cls(
           "flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
           // A collapsed group still has to show that something inside it is active.
@@ -361,7 +409,7 @@ function NavGroupRow({
         )}
       >
         {Icon && <Icon className="h-4 w-4 shrink-0" />}
-        <span className="truncate">{item.label}</span>
+        <RowLabel label={item.label} description={showDescriptions ? item.description : undefined} muted="text-slate-500" />
         <IconChevronDown
           className={cls("ml-auto h-3.5 w-3.5 transition-transform", open && "rotate-180")}
         />
@@ -377,6 +425,9 @@ function NavGroupRow({
               icon={child.icon}
               nested
               external={child.external}
+              description={child.description}
+              showDescription={showDescriptions}
+              onTip={onTip}
               active={child.href === activeHref}
               onNavigate={onNavigate}
               accent={accent}
@@ -455,6 +506,20 @@ export function LeftNav({
     setOverrides((prev) => ({ ...prev, [g.label]: !openFor(g, prev) }));
 
   const closeMobile = () => setMobileOpen(false);
+
+  // The tooltip is drawn once, outside the sidebar: the nav list scrolls, which
+  // would clip it, and the sidebar's transform would anchor a fixed element to
+  // itself instead of the viewport.
+  const [tip, setTip] = useState<{ text: string; top: number; left: number } | null>(null);
+  const [showDescriptions, setShowDescriptions] = useState(false);
+  const hasDescriptions = navItems.some(
+    (i) => i.description || (i.kind === "group" && i.children.some((c) => c.description)),
+  );
+  const onTip: OnTip = (text, el) => {
+    if (!text || !el) return setTip(null);
+    const box = el.getBoundingClientRect();
+    setTip({ text, top: Math.min(box.top + box.height / 2, window.innerHeight - 48), left: box.right + 8 });
+  };
   const initial = appInitial ?? appName.charAt(0).toUpperCase();
 
   // Escape closes the off-canvas drawer — a modal overlay you can only dismiss by
@@ -537,7 +602,20 @@ export function LeftNav({
         </div>
 
         {/* Main navigation */}
-        <nav className="flex-1 space-y-1 overflow-y-auto p-3">
+        <nav className="flex-1 space-y-1 overflow-y-auto p-3" onScroll={() => setTip(null)}>
+          {hasDescriptions && (
+            <button
+              type="button"
+              aria-pressed={showDescriptions}
+              onClick={() => {
+                setTip(null);
+                setShowDescriptions((v) => !v);
+              }}
+              className="w-full rounded-md px-3 py-1 text-left text-xs text-slate-500 hover:bg-slate-100"
+            >
+              {showDescriptions ? "Hide descriptions" : "What's this?"}
+            </button>
+          )}
           {navItems.map((item) =>
             item.kind === "link" ? (
               <NavLinkRow
@@ -546,6 +624,9 @@ export function LeftNav({
                 label={item.label}
                 icon={item.icon}
                 external={item.external}
+                description={item.description}
+                showDescription={showDescriptions}
+                onTip={onTip}
                 active={item.href === activeHref}
                 onNavigate={closeMobile}
                 accent={accent}
@@ -556,7 +637,12 @@ export function LeftNav({
                 item={item}
                 activeHref={activeHref}
                 open={groupOpen(item)}
-                onToggle={() => toggleGroup(item)}
+                onToggle={() => {
+                  setTip(null);
+                  toggleGroup(item);
+                }}
+                showDescriptions={showDescriptions}
+                onTip={onTip}
                 onNavigate={closeMobile}
                 accent={accent}
               />
@@ -620,6 +706,16 @@ export function LeftNav({
           )}
         </div>
       </aside>
+
+      {tip && (
+        <div
+          role="tooltip"
+          className="pointer-events-none fixed z-[60] hidden max-w-64 -translate-y-1/2 rounded-md bg-slate-900 px-2.5 py-1.5 text-xs text-white shadow-lg md:block"
+          style={{ top: tip.top, left: tip.left }}
+        >
+          {tip.text}
+        </div>
+      )}
     </>
   );
 }

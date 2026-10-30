@@ -3,6 +3,11 @@
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
 
+## [2026-10-30] — LeftNav: row descriptions
+
+### Added
+- `description` on links, group children and groups. Shows as a tooltip on hover and keyboard focus. Any description also adds a "What's this?" switch above the nav that prints them under the rows, because touch screens have no hover. Optional: a nav with no descriptions looks and behaves as before.
+
 ## [2026-10-22] — Dictation (mic button) for text fields
 
 ### Added
