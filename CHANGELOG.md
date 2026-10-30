@@ -3,6 +3,11 @@
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
 
+## [2026-10-30b] — LeftNav: section headings
+
+### Added
+- `NavSectionItem` (`kind: "section"`): a plain heading with a top rule, so a long sidebar reads as labelled blocks. Optional: apps that send none look the same.
+
 ## [2026-10-30] — LeftNav: row descriptions
 
 ### Added

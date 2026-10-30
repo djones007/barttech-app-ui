@@ -61,7 +61,13 @@ export type NavGroupItem = {
   children: NavChildItem[];
 };
 
-export type NavItem = NavLinkItem | NavGroupItem;
+/** A plain heading that starts a block of rows, so a long sidebar reads as labelled blocks. Not clickable. */
+export type NavSectionItem = {
+  kind: "section";
+  label: string;
+};
+
+export type NavItem = NavLinkItem | NavGroupItem | NavSectionItem;
 
 export type LeftNavProps = {
   /** Shown in the sidebar header and the mobile top bar. */
@@ -195,7 +201,7 @@ function resolveActiveHref(
   };
   for (const item of navItems) {
     if (item.kind === "link") consider(item);
-    else for (const child of item.children) consider(child);
+    else if (item.kind === "group") for (const child of item.children) consider(child);
   }
   for (const href of extraHrefs) if (href) consider({ href });
   return best;
@@ -513,7 +519,7 @@ export function LeftNav({
   const [tip, setTip] = useState<{ text: string; top: number; left: number } | null>(null);
   const [showDescriptions, setShowDescriptions] = useState(false);
   const hasDescriptions = navItems.some(
-    (i) => i.description || (i.kind === "group" && i.children.some((c) => c.description)),
+    (i) => i.kind !== "section" && (i.description || (i.kind === "group" && i.children.some((c) => c.description))),
   );
   const onTip: OnTip = (text, el) => {
     if (!text || !el) return setTip(null);
@@ -617,7 +623,14 @@ export function LeftNav({
             </button>
           )}
           {navItems.map((item) =>
-            item.kind === "link" ? (
+            item.kind === "section" ? (
+              <p
+                key={`section-${item.label}`}
+                className="mt-3 border-t border-slate-200 px-3 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wide text-slate-500 first:mt-0 first:border-t-0 first:pt-1"
+              >
+                {item.label}
+              </p>
+            ) : item.kind === "link" ? (
               <NavLinkRow
                 key={item.href}
                 href={item.href}
