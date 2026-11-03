@@ -278,8 +278,14 @@ function tipHandlers(description: string | undefined, onTip: OnTip | undefined) 
   if (!description || !onTip) return {};
   return {
     "aria-description": description,
-    onMouseEnter: (e: React.MouseEvent<HTMLElement>) => onTip(description, e.currentTarget),
-    onMouseLeave: () => onTip(null),
+    // Pointer events filtered to a real mouse, not onMouseEnter. A touch tap fires a
+    // synthetic mouseenter first; when that handler adds the tooltip to the page, iOS
+    // Safari treats the tap as a "hover" and swallows the click, so every row needed
+    // two taps on a phone. Touch users get descriptions through the in-menu switch.
+    onPointerEnter: (e: React.PointerEvent<HTMLElement>) => {
+      if (e.pointerType === "mouse") onTip(description, e.currentTarget);
+    },
+    onPointerLeave: () => onTip(null),
     onFocus: (e: React.FocusEvent<HTMLElement>) => onTip(description, e.currentTarget),
     onBlur: () => onTip(null),
   };
