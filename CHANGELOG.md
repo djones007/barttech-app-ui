@@ -3,6 +3,11 @@
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
 
+## [2026-11-15] — Security: next 16.3.8 to 16.4.1 (dev dependency)
+
+### Fixed
+- Bumped the dev-only `next` to 16.4.1, clearing four critical Dependabot alerts (unauthenticated RCE in `use cache` typed arrays and in Image Optimization with SVG). The library ships no server; typecheck, lint and 20 tests pass.
+
 ## [2026-11-03] — LeftNav: one tap opens a row on touch screens
 
 ### Fixed
