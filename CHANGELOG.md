@@ -3,6 +3,11 @@
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
 
+## [2026-11-16] — Security: minimatch override (dev dependency)
+
+### Fixed
+- Overrode the `minimatch` under `@typescript-eslint/typescript-estree` to ^11.0.1, clearing Dependabot GHSA-g3hv-75wg-m249 (globparts DoS, affects 7.0.0 to 11.0.0). Dev-only; lint, typecheck and 20 tests pass, `npm audit` reports 0 vulnerabilities.
+
 ## [2026-11-15] — Security: next 16.3.8 to 16.4.1 (dev dependency)
 
 ### Fixed
