@@ -3,6 +3,11 @@
 All notable changes to this project are documented here. Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) — grouped by date, newest first. Entries use **Added** (new features), **Changed** (behavior changes), **Fixed** (bug fixes), **Removed** (deleted features).
 
 
+## [2026-11-18] — Security: next 16.4.1 to 16.4.6 (dev dependency)
+
+### Fixed
+- Bumped the `next` dev dependency from 16.4.1 to 16.4.6, clearing the Aikido-reported Next.js CVEs fixed in 16.4.5 (including High CVE-2026-119790). Found by the estate-wide sweep; Aikido does not scan this repo. Lint, typecheck and tests pass.
+
 ## [2026-11-16] — Security: minimatch override (dev dependency)
 
 ### Fixed
